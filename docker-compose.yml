@@ -20,7 +20,7 @@ services:
     environment:
       PORT: "3001"
       NUCLEO_API_URL: "http://nucleo:5060"
-    ports:
-      - "3001:3001"
+    expose:
+      - "3001"
     depends_on:
       - nucleo
