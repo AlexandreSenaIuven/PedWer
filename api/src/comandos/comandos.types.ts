@@ -1,0 +1,68 @@
+export interface FiscalComando {
+  aliquotaIpi: number;
+  aliquotaIcm: number;
+  valorIpi: number;
+  valorIcm: number;
+  valorIcmSt: number;
+  baseIcm: number;
+  baseIcmSt: number;
+  valorMercadoria: number;
+  cst: string;
+  cfop: string;
+  cstPis: string;
+  aliqPis: number;
+  cstCof: string;
+  aliqCof: number;
+  unidade: string;
+}
+
+export interface ItemComando {
+  grupo: string;
+  referencia: string;
+  gradegrp: string;
+  quantidade: number;
+  precoTabelaAjustado: number;
+  precoFinal: number;
+  percentualDesconto: number;
+  origem: 'TabelaSemDesconto' | 'TabelaComDesconto' | 'Negociado';
+  fiscal: FiscalComando | null;
+}
+
+/**
+ * Dados da tela "Dados Para Entrega" (form ped_ph do ERP). No VFP vão para
+ * `cligeral.dbf`, chaveada só por `codigo` do pedido: obs/obs2 (observações)
+ * e `cligeral.cond` → coluna `condpag` (a "Referência"). Endereço/bairro/
+ * cidade/UF são memvars só de impressão lá; aqui gravamos também em
+ * ender_ent/bairro_ent/cidade_ent/uf_ent, que existem na tabela.
+ */
+export interface DadosEntregaComando {
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  referencia: string;
+  observacao1: string;
+  observacao2: string;
+}
+
+export interface ComandoCriarPedido {
+  id: string;
+  /** Sem tipo = 'CriarPedido' (compatibilidade). 'GravarEntrega' grava só o cligeral do pedido já criado. */
+  tipo?: 'CriarPedido' | 'GravarEntrega';
+  entrega?: DadosEntregaComando;
+  tipoOperacao: string;
+  codigoEmpresa: string;
+  codigoCliente: string;
+  data: string;
+  dataEntrega?: string;
+  autor: string;
+  referenciaExterna: string;
+  condicaoPagamentoCodigo?: string;
+  vendedorCodigo1: string;
+  vendedorCodigo2: string;
+  tipoVendedorParaComissao: string;
+  itens: ItemComando[];
+  status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro';
+  erro?: string;
+  criadoEm: Date;
+}

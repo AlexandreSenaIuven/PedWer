@@ -1,0 +1,26 @@
+# Só a metade "central" da aplicação (API + front publicado por ela, e o
+# motor de regras). O console (Integrador) NÃO entra aqui — ele roda como
+# serviço Windows no servidor de cada cliente, ver
+# docs/instalacao-console-cliente.md. Ele aponta para a URL pública que o
+# EasyPanel der ao serviço `api`.
+services:
+  nucleo:
+    build:
+      context: .
+      dockerfile: nucleo/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "5060"
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "3001"
+      NUCLEO_API_URL: "http://nucleo:5060"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - nucleo

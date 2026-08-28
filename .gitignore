@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node
+node_modules/
+dist/
+
+# Publicação local (artefatos de deploy, não fonte)
+/publicado/
+
+# Ambiente / segredos — nunca commitar
+.env
+.env.*
+!.env.example
+
+# Editor / SO
+.vs/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+.claude/settings.local.json

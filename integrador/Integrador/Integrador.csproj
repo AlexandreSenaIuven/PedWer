@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- VFPOLEDB.1 só está registrado no hive de 32 bits (WOW6432Node) nesta
+         máquina — confirmado em 20/08/2026 via registro do Windows. O
+         console precisa rodar como x86, senão a conexão OLE DB falha. -->
+    <PlatformTarget>x86</PlatformTarget>
+    <Platforms>x86</Platforms>
+    <RuntimeIdentifiers>win-x86</RuntimeIdentifiers>
+    <!-- Projeto só roda no Windows (depende de VFPOLEDB); CA1416 alertaria sobre
+         chamadas OleDb "não suportadas em outras plataformas", o que aqui é irrelevante. -->
+    <NoWarn>CA1416</NoWarn>
+  </PropertyGroup>
+
+  <!-- Só roda no Windows mesmo (depende de VFPOLEDB) — silencia os avisos CA1416. -->
+  <ItemGroup>
+    <SupportedPlatform Include="windows" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.OleDb" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\motor-regras\MotorRegras\MotorRegras.csproj" />
+    <ProjectReference Include="..\..\dominio\Dominio\Dominio.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,279 @@
+<title>Roteiro de Testes do Pedido Web</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F7F8F6;
+    --card: #FFFFFF;
+    --ink: #1C2420;
+    --muted: #5C6B62;
+    --line: #DEE4DF;
+    --accent: #1D6E4E;
+    --accent-soft: #E3F0E9;
+    --warn: #B45309;
+    --warn-soft: #FBF0DF;
+    --block: #B3362B;
+    --block-soft: #FBE9E6;
+    --gap-ink: #5B5470;
+    --gap-soft: #ECE9F4;
+    --mono-bg: #F0F3F0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14181B;
+      --card: #1C2226;
+      --ink: #E8ECE9;
+      --muted: #9AA8A0;
+      --line: #2E373C;
+      --accent: #4CC38A;
+      --accent-soft: #1E312A;
+      --warn: #E0A15E;
+      --warn-soft: #33270F;
+      --block: #E07B6E;
+      --block-soft: #38201C;
+      --gap-ink: #A99FC7;
+      --gap-soft: #262133;
+      --mono-bg: #232B2F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14181B;
+    --card: #1C2226;
+    --ink: #E8ECE9;
+    --muted: #9AA8A0;
+    --line: #2E373C;
+    --accent: #4CC38A;
+    --accent-soft: #1E312A;
+    --warn: #E0A15E;
+    --warn-soft: #33270F;
+    --block: #E07B6E;
+    --block-soft: #38201C;
+    --gap-ink: #A99FC7;
+    --gap-soft: #262133;
+    --mono-bg: #232B2F;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .pagina { max-width: 880px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  h1, h2, h3 { font-family: "Archivo", system-ui, sans-serif; text-wrap: balance; }
+  h1 { font-size: 2rem; font-weight: 700; margin: 0 0 .35rem; }
+  .sub { color: var(--muted); margin: 0 0 2.5rem; max-width: 62ch; }
+  h2 {
+    font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em;
+    color: var(--accent); margin: 3rem 0 .35rem;
+  }
+  .secao-desc { color: var(--muted); margin: 0 0 1.2rem; max-width: 68ch; }
+
+  .caso {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .caso-topo {
+    display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap;
+    padding: .85rem 1.2rem .7rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .caso-id {
+    font-family: "IBM Plex Mono", monospace; font-size: .75rem; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft);
+    padding: .1rem .5rem; border-radius: 5px;
+  }
+  .caso-titulo { font-family: "Archivo", sans-serif; font-weight: 600; font-size: 1.02rem; }
+  .chip {
+    margin-left: auto;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    padding: .18rem .6rem; border-radius: 999px; white-space: nowrap;
+  }
+  .chip-ok { color: var(--accent); background: var(--accent-soft); }
+  .chip-aviso { color: var(--warn); background: var(--warn-soft); }
+  .chip-bloqueio { color: var(--block); background: var(--block-soft); }
+  .chip-lacuna { color: var(--gap-ink); background: var(--gap-soft); }
+
+  .caso-corpo { padding: .9rem 1.2rem 1.1rem; }
+  .caso-corpo p { margin: .4rem 0; max-width: 70ch; }
+  .rotulo {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: .8rem 0 .3rem;
+  }
+  .rotulo:first-child { margin-top: 0; }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", monospace; font-size: .86em;
+    background: var(--mono-bg); padding: .08rem .35rem; border-radius: 4px;
+  }
+
+  .tabela-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { text-align: left; padding: .35rem .7rem .35rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  td.valor, th.valor { text-align: right; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  ul { padding-left: 1.2rem; margin: .4rem 0; }
+  li { margin: .25rem 0; max-width: 68ch; }
+
+  .nota {
+    border-left: 3px solid var(--accent);
+    background: var(--card);
+    border-radius: 0 8px 8px 0;
+    padding: .9rem 1.2rem;
+    margin: 1rem 0;
+  }
+  .nota p { margin: .35rem 0; max-width: 70ch; }
+  .nota .titulo-nota { font-family: "Archivo", sans-serif; font-weight: 700; font-size: .95rem; }
+</style>
+
+<div class="pagina">
+  <h1>Roteiro de Testes do Pedido Web</h1>
+  <p class="sub">Casos derivados dos fontes do VFP e de pedidos reais gravados na base de teste (<span class="mono">Z:\BASES_CLIENTES\WER</span>), com os valores finais para comparação. Todos usam a <strong>empresa 02 (BYWER)</strong> e pedidos de 1 item. Gerado em 24/08/2026 — os valores esperados dependem do cadastro dessa data.</p>
+
+  <div class="nota">
+    <p class="titulo-nota">Sobre a sua dúvida: o VFP bloqueia crédito ao escolher o cliente?</p>
+    <p><strong>Não.</strong> Nos fontes, a checagem de crédito na tela de lançamento (<span class="mono">ped_wer.scx</span>) apenas <em>avisa</em> — e ainda com o sinal invertido (defeito RF-140 documentado). Os bloqueios duros de crédito (atraso, limite zerado, estouro) existem, mas rodam na <strong>baixa</strong> (<span class="mono">valt2w.prg</span>), não no lançamento. Há motivo de negócio: 95% dos clientes operam com limite de consumo único (zerado a cada baixa), então bloquear o lançamento impediria digitar quase tudo — o fluxo real é digitar → liberar crédito → baixar. A tela web mostra a faixa de crédito com o sinal <em>correto</em> e não bloqueia, igual ao lançamento do VFP.</p>
+  </div>
+
+  <h2>Parte A — Réplicas de pedidos reais</h2>
+  <p class="secao-desc">Pedidos que existem gravados na base, com 1 item. Digite os mesmos dados e compare os valores da tela (e do registro gravado) com os do pedido original. Nos três primeiros, o preço vem de <strong>negociação vigente</strong> — ao informar o produto, o preço deve trocar sozinho para o negociado, com origem "Negociado", ignorando o teto de desconto.</p>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">R1</span><span class="caso-titulo">Réplica ARMAZEMURB — negociação + ST</span><span class="chip chip-ok">valores devem bater</span></div>
+    <div class="caso-corpo">
+      <p class="rotulo">Digitar</p>
+      <p>Tipo <code>540</code> · Cliente <code>0043811</code> (TINGUI) · Produto <code>08 | 01004098</code> (POTE/TWH GRD PUDIM) · Quantidade <code>2</code> · Condição <code>47</code> · Vendedores <code>99</code> / <code>99</code></p>
+      <p class="rotulo">Esperado (conferido contra o pedido real e contra o motor — paridade exata)</p>
+      <div class="tabela-scroll"><table>
+        <tr><th>Valor</th><th class="valor">Esperado</th><th>Confere com</th></tr>
+        <tr><td>Preço (negociado, automático)</td><td class="valor">75,40</td><td>negocia.dbf</td></tr>
+        <tr><td>Preço de tabela</td><td class="valor">167,60</td><td>qtd_larg do pedido real</td></tr>
+        <tr><td>Desconto</td><td class="valor">55,01%</td><td>—</td></tr>
+        <tr><td>IPI (alíq. 6,75%)</td><td class="valor">10,18</td><td>total_ipi real</td></tr>
+        <tr><td>ICMS-ST (alíq. 22 · MVA 74,56)</td><td class="valor">42,22</td><td>icms_ret real</td></tr>
+        <tr><td>Total do pedido</td><td class="valor">203,20</td><td>total_nota real</td></tr>
+        <tr><td>Comissão gravada (qtd_comp)</td><td class="valor">3%</td><td>vend. 99 é tipo R → escada 2, desc ≥ 30%</td></tr>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">R2</span><span class="caso-titulo">Réplica SUPPADRAO — mesmo produto, quantidade maior</span><span class="chip chip-ok">valores devem bater</span></div>
+    <div class="caso-corpo">
+      <p>Igual ao R1, mas quantidade <code>15</code>. Esperado: IPI <span class="mono">76,34</span> · ST <span class="mono">316,63</span> · total <span class="mono">1.523,97</span> (iguais ao pedido real SUPPADRAO).</p>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">R3</span><span class="caso-titulo">Réplica STONKS05 — outro produto negociado</span><span class="chip chip-ok">valores devem bater</span></div>
+    <div class="caso-corpo">
+      <p>Tipo <code>540</code> · Cliente <code>0043811</code> · Produto <code>08 | 01002748</code> · Quantidade <code>6</code>. Preço negociado <span class="mono">110,40</span> (tabela 245,40). Esperado: IPI <span class="mono">44,71</span> · ST <span class="mono">185,44</span> · total <span class="mono">892,55</span> (iguais ao pedido real STONKS05).</p>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">R4</span><span class="caso-titulo">Desconto Diretoria — sem ST</span><span class="chip chip-ok">valores devem bater</span></div>
+    <div class="caso-corpo">
+      <p>Tipo <code>540</code> · Cliente <code>0043772</code> (RJ ARTIGOS DE FESTAS) · Produto <code>08 | 01004186</code> · Quantidade <code>1</code>.</p>
+      <p>O cliente tem "Desconto Diretoria" de 70% no cadastro: preço de tabela 184,30 deve virar <span class="mono">55,29</span> sozinho. Esperado: IPI <span class="mono">3,73</span> (6,75%) · ICMS 13% · <strong>ST = 0,00</strong> · total <span class="mono">59,02</span>.</p>
+      <p>ST zero é o comportamento correto <em>com o cadastro de hoje</em>: o cliente está com enquadramento "T", cuja linha no <span class="mono">cadicm</span> tem alíquota ST zerada. O pedido antigo AB17436A (que tinha ST) bate matematicamente com o enquadramento "A" — o cadastro mudou desde junho. Para confirmar: redigite esse pedido no VFP hoje e compare.</p>
+    </div>
+  </div>
+
+  <h2>Parte B — Regras e bloqueios</h2>
+  <p class="secao-desc">Cada caso dispara uma regra específica portada dos fontes. "Bloqueia" = a aplicação recusa com mensagem; "avisa" = mostra alerta mas deixa seguir (fiel ao VFP).</p>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T1</span><span class="caso-titulo">Crédito em atraso — avisa, não bloqueia</span><span class="chip chip-aviso">faixa vermelha</span></div>
+    <div class="caso-corpo">
+      <p>Selecione o cliente <code>02897</code> (títulos de 2010 em aberto). A faixa de crédito deve ficar vermelha com <span class="mono">BloqueadoAtraso</span> — mas o pedido ainda pode ser fechado, como no lançamento do VFP (o bloqueio real é na baixa).</p>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T2</span><span class="caso-titulo">Limite zerado — avisa</span><span class="chip chip-aviso">faixa vermelha</span></div>
+    <div class="caso-corpo"><p>Cliente <code>0043969</code> (MADAME GATEAU, crédito 0). Faixa vermelha <span class="mono">BloqueadoLimiteZerado</span>. É o estado normal de 95% dos clientes (limite de consumo único).</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T3</span><span class="caso-titulo">Crédito aprovado</span><span class="chip chip-ok">faixa verde</span></div>
+    <div class="caso-corpo"><p>Cliente <code>00184</code> (GATE GOURMET, limite 40.000, sem títulos abertos). Faixa verde <span class="mono">Aprovado</span>.</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T4</span><span class="caso-titulo">Teto de desconto do item (RF-083/086)</span><span class="chip chip-bloqueio">deve bloquear</span></div>
+    <div class="caso-corpo">
+      <p>Cliente <code>00184</code> (teto = 10% do cadastro + 20% da coluna A = <strong>30%</strong>) · Produto <code>61 | 01005000</code> (PRATO, tabela 1.014,83).</p>
+      <ul>
+        <li>Digitar preço <code>700,00</code> (desconto 31%) → <strong>recusado</strong> com "Desconto ... excede o teto".</li>
+        <li>Digitar preço <code>720,00</code> (desconto 29%) → aceito.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T5</span><span class="caso-titulo">Negociação fura o teto (RF-078)</span><span class="chip chip-ok">preço troca sozinho</span></div>
+    <div class="caso-corpo"><p>Cliente <code>0043811</code> · Produto <code>08 | 01004098</code>: ao escolher o produto, o "Valor unitário" já deve vir <span class="mono">75,40</span> e o "Desc. %" <span class="mono">55,01</span>, com os dois campos travados e a nota "Preço negociado para este cliente (válido até 31/12/2026)". Negociação vigente e autorizada não passa pela alçada, igual ao VFP.</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T5b</span><span class="caso-titulo">Negociação vencida bloqueia a venda</span><span class="chip chip-bloqueio">deve bloquear</span></div>
+    <div class="caso-corpo"><p>Cliente <code>03556</code> · Produto <code>04 | 01003206</code> (negociação de 19,75 que venceu em 28/11/2018). Ao escolher o produto: alerta "Negociação ... venceu em 28/11/2018 — venda não permitida" e o botão Adicionar fica desabilitado. Regra decidida em 25/08/2026 — mais restritiva que o VFP, que só avisava (RF-076).</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T6</span><span class="caso-titulo">Linha de negócio única (RF-142)</span><span class="chip chip-bloqueio">deve bloquear</span></div>
+    <div class="caso-corpo"><p>Adicione <code>61 | 01005000</code> (grupo de negócio 01) e depois tente <code>61 | 01005001</code> (grupo 02) no mesmo pedido → o segundo item é recusado.</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T7</span><span class="caso-titulo">Quantidade zero (RF-088)</span><span class="chip chip-bloqueio">deve bloquear</span></div>
+    <div class="caso-corpo"><p>Qualquer produto com quantidade <code>0</code> → recusado.</p></div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T8</span><span class="caso-titulo">Escada de comissão (regra do piso)</span><span class="chip chip-ok">conferir qtd_comp</span></div>
+    <div class="caso-corpo">
+      <p>Com vendedor tipo <strong>R</strong> (ex.: 99), escada 2. Feche pedidos com estes descontos e confira o <span class="mono">qtd_comp</span> gravado:</p>
+      <div class="tabela-scroll"><table>
+        <tr><th class="valor">Desconto</th><th class="valor">Comissão esperada</th></tr>
+        <tr><td class="valor">0%</td><td class="valor">10%</td></tr>
+        <tr><td class="valor">5%</td><td class="valor">10%</td></tr>
+        <tr><td class="valor">15%</td><td class="valor">7%</td></tr>
+        <tr><td class="valor">25%</td><td class="valor">5%</td></tr>
+        <tr><td class="valor">35%</td><td class="valor">3%</td></tr>
+      </table></div>
+      <p>Regra do piso (decidida em 20/08): mantém a faixa até cruzar o degrau — o VFP tinha duas lógicas divergentes (defeito D7); a web usa uma só.</p>
+    </div>
+  </div>
+
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">T9</span><span class="caso-titulo">Campos gravados no pedido.dbf</span><span class="chip chip-ok">conferir registro</span></div>
+    <div class="caso-corpo">
+      <p>Após qualquer gravação, confira no registro: <span class="mono">cst, cfop, cstpis, aliqpis, cstcof, aliqcof, ipi, icm, cond_pag, unidade, hora_ini, hora_fim, total_ipi, base_icm, icms_ret, bc_retenc, total_icm, tot_merc, icmret_m, baseicm_rt, total_nota</span> (com impostos), <span class="mono">material03</span> sem zeros à esquerda, <span class="mono">data_fim</span> vazio e <span class="mono">data_ent</span> = prazo de entrega informado.</p>
+      <p>Depois da tela <strong>Dados Para Entrega</strong> (Imprimir, Salvar ou Sair), confira também a linha em <span class="mono">cligeral.dbf</span> (tabela livre na raiz da base, chave = código do pedido, como o form <span class="mono">ped_ph</span> do ERP grava): <span class="mono">obs</span> (1ª observação), <span class="mono">obs2</span> (2ª observação), <span class="mono">condpag</span>/<span class="mono">referencia</span> (Referência), <span class="mono">ender_ent, bairro_ent, cidade_ent, uf_ent</span>. Comando: <span class="mono">Integrador.exe sql base "SELECT * FROM cligeral WHERE codigo = &#39;&lt;código&gt;&#39;"</span>.</p>
+    </div>
+  </div>
+
+  <h2>Parte C — Divergências conhecidas (não são defeito)</h2>
+  <div class="caso">
+    <div class="caso-topo"><span class="caso-id">C1</span><span class="caso-titulo">O que vai divergir de pedidos antigos, e por quê</span><span class="chip chip-lacuna">lacunas registradas</span></div>
+    <div class="caso-corpo">
+      <ul>
+        <li><strong>CST/CFOP de pedidos antigos</strong> (ex.: 010/5401 no AB17436A) dependiam do <span class="mono">cadsub</span> da época — hoje, sem linha de cadsub para o enquadramento do cliente, sai o padrão (cod_proc/natureza do tipo, ex.: 000/5101).</li>
+        <li><strong>Suframa, benefício fiscal e venda interestadual a pessoa física (DIFAL)</strong>: o motor recusa explicitamente e o item aparece com ⚠ — nunca calcula errado em silêncio. Não há produto com benefício nem <span class="mono">ind_ipi="V"</span> nesta base para testar esses ramos.</li>
+        <li><strong>Frete e transportadora</strong> ainda não são coletados — saem em branco/zero. (Prazo de entrega → <span class="mono">pedido.data_ent</span>; observações e endereço de entrega → <span class="mono">cligeral</span>, já implementados.)</li>
+        <li><strong>Bloqueio duro de crédito é da baixa</strong> — fora do escopo atual (só o lançamento foi migrado).</li>
+        <li><strong>Numeração</strong>: referência <span class="mono">WB########</span> provisória — a regra real dos prefixos (AB/FB/TA...) ainda precisa ser definida pelo negócio.</li>
+      </ul>
+    </div>
+  </div>
+</div>

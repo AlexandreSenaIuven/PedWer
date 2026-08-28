@@ -1,0 +1,104 @@
+{\rtf1\ansi\ansicpg1252\deff0\deflang1046
+{\fonttbl{\f0\fswiss Arial;}{\f1\fmodern Courier New;}}
+{\colortbl;\red192\green0\blue0;\red0\green0\blue0;\red90\green90\blue90;}
+\viewkind4\uc1\pard\f0\fs22
+
+\pard\qc\b\fs40 Guia de Instala\'e7\'e3o\line Componente de Integra\'e7\'e3o PedWer Web\b0\fs20\par
+\pard\qc\fs20\cf3 (o "console" \'96 programa que liga o sistema atual ao PedWer Web)\cf0\fs22\par
+\pard\qc\fs18\cf3 Documento gerado em 26/08/2026\cf0\fs22\par
+\pard\par
+
+\pard\b\fs28\sb200\sa120 1. O que \'e9 isto e por que instalar\b0\fs22\par
+\pard\sa120 O PedWer Web \'e9 a nova vers\'e3o, acess\'edvel por navegador, do lan\'e7amento de pedidos que hoje roda dentro do sistema em Visual FoxPro. Para que a tela web enxergue os mesmos clientes, produtos e pre\'e7os do sistema atual, \'e9 preciso um pequeno programa rodando no servidor \'96 chamado aqui de "console" \'96 que fica de olho nos arquivos do sistema e mant\'e9m um servidor central atualizado.\par
+\pard\sa120\b Importante \'96 o que este programa N\'c3O faz:\b0\par
+\pard\fi-240\li480\sa60 {\bullet}\tab N\'e3o abre nenhuma porta de entrada no servidor \'96 ele s\'f3 faz liga\'e7\'f5es de sa\'edda, como um navegador abrindo um site.\par
+\pard\fi-240\li480\sa60 {\bullet}\tab N\'e3o altera, reinstala nem reconfigura o sistema em Visual FoxPro que j\'e1 est\'e1 rodando \'96 ele apenas L\'ca os arquivos de dados.\par
+\pard\fi-240\li480\sa60 {\bullet}\tab N\'e3o modifica nenhum registro existente nos arquivos do sistema atual.\par
+\pard\fi-240\li480\sa60 {\bullet}\tab N\'e3o exige reiniciar o servidor.\par
+\pard\fi-240\li480\sa120 {\bullet}\tab Pode ser parado ou removido a qualquer momento (passo 7), sem deixar nenhum ind\'edcio no sistema atual.\par
+\pard\sa120 Ele roda em segundo plano, como um "servi\'e7o do Windows" (igual antiv\'edrus, backup autom\'e1tico etc.), consultando os dados a cada 30 segundos \'96 um processo leve, que n\'e3o compete por recursos com o sistema principal.\par
+
+\pard\b\fs28\sb200\sa120 2. Pr\'e9-requisitos \'96 confira ANTES de instalar qualquer coisa\b0\fs22\par
+\pard\sa120\b 2.1) Vers\'e3o do Windows Server\b0\par
+\pard\sa120 O pacote inclui tudo que precisa para rodar, mas o Windows do servidor precisa ser \b Windows Server 2016 ou mais novo\b0  (2016, 2019, 2022 ou 2025). Servidores mais antigos (2012, 2008 ou anteriores) \b n\'e3o s\'e3o compat\'edveis\b0  com este pacote \'96 nesse caso, pare aqui e entre em contato com o suporte antes de prosseguir, pois \'e9 preciso preparar uma vers\'e3o diferente.\par
+\pard\sa120 Para verificar: pressione as teclas \b Windows + R\b0 , digite \f1 winver\f0  e pressione Enter. Vai abrir uma janela mostrando a vers\'e3o do Windows.\par
+\pard\sa60\cf1\b Se aparecer "Windows Server 2012", "2008" ou algo mais antigo: pare aqui e fale com o suporte.\b0\cf0\par
+\pard\sa120\b 2.2) Espa\'e7o em disco e acesso \'e0 pasta do sistema\b0\par
+\pard\fi-240\li480\sa60 {\bullet}\tab Cerca de 100 MB livres em disco (o programa principal tem aproximadamente 65 MB).\par
+\pard\fi-240\li480\sa120 {\bullet}\tab Acesso de leitura \'e0 pasta onde ficam os arquivos de dados do sistema atual (a mesma pasta que o sistema em Visual FoxPro j\'e1 usa hoje \'96 se n\'e3o souber qual \'e9, pergunte a quem administra o sistema localmente).\par
+\pard\sa120\b 2.3) Acesso \'e0 internet (sa\'edda apenas)\b0\par
+\pard\sa120 O servidor precisa conseguir fazer conex\'f5es de \b sa\'edda\b0  na porta 443 (HTTPS, o mesmo protocolo de qualquer site seguro) para o endere\'e7o do servidor central do PedWer Web. \b N\'e3o \'e9 preciso abrir nenhuma porta de entrada\b0  nem mexer no roteador/firewall para permitir conex\'f5es chegando de fora.\par
+\pard\sa120\b 2.4) Um componente da Microsoft (verificar antes de instalar)\b0\par
+\pard\sa120 O console precisa do \b "Microsoft OLE DB Provider for Visual FoxPro 9.0"\b0  (nome curto: VFPOLEDB) \'96 um componente pequeno e antigo da pr\'f3pria Microsoft, usado h\'e1 anos para outros sistemas acessarem dados do Visual FoxPro. Muitos servidores que j\'e1 rodam VFP h\'e1 tempos j\'e1 o t\'eam instalado por outro motivo.\par
+\pard\sa60 Para verificar se j\'e1 est\'e1 instalado: abra o \b PowerShell como Administrador\b0  (clique em Iniciar, digite \f1 PowerShell\f0 , clique com o bot\'e3o direito em "Windows PowerShell" e escolha "Executar como administrador") e digite:\par
+\pard\li480\sa120\f1\fs20 Get-ItemProperty 'HKLM:\\SOFTWARE\\Classes\\VFPOLEDB.1' -ErrorAction SilentlyContinue\f0\fs22\par
+\pard\sa60 \b Se aparecer uma linha com "Microsoft OLE DB Provider for Visual FoxPro": j\'e1 est\'e1 instalado, pode pular para a se\'e7\'e3o 3.\b0\par
+\pard\sa120 \b Se n\'e3o aparecer nada:\b0  precisa instalar. O instalador oficial (arquivo \f1 VFPOLEDBSetup.msi\f0 , cerca de 1,2 MB) est\'e1 dispon\'edvel no reposit\'f3rio oficial de continuidade do Visual FoxPro mantido pela comunidade/Microsoft no GitHub (github.com/VFPX) \'96 quem for fazer a instala\'e7\'e3o pode pedir esse arquivo ao suporte, junto com os demais arquivos do pacote. Depois de copiar o instalador para o servidor, rode como administrador:\par
+\pard\li480\sa120\f1\fs20 msiexec /i VFPOLEDBSetup.msi /quiet /norestart\f0\fs22\par
+\pard\sa120\b 2.5) Permiss\'e3o de administrador\b0\par
+\pard\sa120 Necess\'e1ria apenas durante a instala\'e7\'e3o (para registrar o servi\'e7o do Windows). Depois de instalado, o console roda sozinho, sem precisar de ningu\'e9m logado na m\'e1quina.\par
+
+\pard\b\fs28\sb200\sa120 3. Arquivos necess\'e1rios\b0\fs22\par
+\pard\sa120 O suporte vai enviar dois arquivos (por e-mail, pendrive ou \'e1rea compartilhada \'96 combine a melhor forma):\par
+\pard\fi-240\li480\sa60 {\bullet}\tab \f1 Integrador.exe\f0  \'96 o programa principal (arquivo \'fanico, sem instalador, cerca de 65 MB).\par
+\pard\fi-240\li480\sa120 {\bullet}\tab \f1 nssm.exe\f0  \'96 uma ferramenta pequena e conhecida, usada para registrar o programa como um servi\'e7o do Windows (assim ele inicia sozinho e fica sempre rodando).\par
+
+\pard\b\fs28\sb200\sa120 4. Instala\'e7\'e3o passo a passo\b0\fs22\par
+\pard\sa120\b Passo 1 \'96 Criar a pasta do programa\b0\par
+\pard\sa120 Crie a pasta \f1 C:\\PedWer\f0  (pelo Explorador de Arquivos, ou pelo PowerShell com o comando abaixo):\par
+\pard\li480\sa120\f1\fs20 New-Item -ItemType Directory -Force -Path C:\\PedWer\f0\fs22\par
+\pard\sa120\b Passo 2 \'96 Copiar os arquivos\b0\par
+\pard\sa120 Copie \f1 Integrador.exe\f0  e \f1 nssm.exe\f0  (recebidos do suporte) para dentro de \f1 C:\\PedWer\f0 .\par
+\pard\sa120\b Passo 3 \'96 Descobrir o caminho da pasta de dados do sistema atual\b0\par
+\pard\sa120 Anote o caminho completo da pasta onde ficam os arquivos de dados do sistema em Visual FoxPro (pergunte a quem administra o sistema local, se n\'e3o souber). Vai ser usado no Passo 5. Exemplo de como esse caminho costuma se parecer: \f1 D:\\Sistema\\Dados\f0  ou \f1 C:\\Fenicia\f0  (o nome real varia por instala\'e7\'e3o).\par
+\pard\sa120\b Passo 4 \'96 Abrir o PowerShell como Administrador\b0\par
+\pard\sa120 Clique em Iniciar, digite \f1 PowerShell\f0 , clique com o bot\'e3o direito em "Windows PowerShell" e escolha "Executar como administrador".\par
+\pard\sa120\b Passo 5 \'96 Registrar o servi\'e7o\b0\par
+\pard\sa60 Digite (ou copie e cole) o comando abaixo. Substitua \f1 https://ENDERECO-DO-SERVIDOR-CENTRAL\f0  pelo endere\'e7o informado pelo suporte:\par
+\pard\li480\sa120\f1\fs20 C:\\PedWer\\nssm.exe install PedWerIntegrador C:\\PedWer\\Integrador.exe "servico https://ENDERECO-DO-SERVIDOR-CENTRAL"\f0\fs22\par
+\pard\sa120\b Passo 6 \'96 Configurar o caminho dos dados deste cliente\b0\par
+\pard\sa60 Substitua \f1 CAMINHO-DA-PASTA-DE-DADOS\f0  pelo caminho anotado no Passo 3 (mantenha as aspas):\par
+\pard\li480\sa120\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppEnvironmentExtra "PEDWER_PASTA_BASE=CAMINHO-DA-PASTA-DE-DADOS"\f0\fs22\par
+\pard\sa60\cf1\b Este passo \'e9 obrigat\'f3rio \'96 se for esquecido, o programa n\'e3o inicia (e avisa claramente qual vari\'e1vel falta, ao inv\'e9s de usar um caminho errado por engano).\b0\cf0\par
+\pard\sa120\b Passo 7 \'96 Configurar pasta de trabalho e arquivos de registro (log)\b0\par
+\pard\li480\sa60\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppDirectory C:\\PedWer\f0\fs22\par
+\pard\li480\sa60\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppStdout C:\\PedWer\\servico-saida.log\f0\fs22\par
+\pard\li480\sa60\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppStderr C:\\PedWer\\servico-erros.log\f0\fs22\par
+\pard\li480\sa120\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppRotateFiles 1\f0\fs22\par
+\pard\sa120\b Passo 8 \'96 Configurar nova tentativa autom\'e1tica\b0\par
+\pard\sa60 Isso faz o programa tentar de novo sozinho se, por exemplo, o servidor reiniciar antes da rede estar dispon\'edvel:\par
+\pard\li480\sa120\f1\fs20 C:\\PedWer\\nssm.exe set PedWerIntegrador AppRestartDelay 10000\f0\fs22\par
+\pard\sa120\b Passo 9 \'96 Iniciar o servi\'e7o\b0\par
+\pard\li480\sa120\f1\fs20 Start-Service PedWerIntegrador\f0\fs22\par
+\pard\sa120 Pronto \'96 a instala\'e7\'e3o terminou. O servi\'e7o j\'e1 vai continuar rodando sozinho, inclusive depois de reiniciar o servidor, sem precisar repetir nenhum passo.\par
+
+\pard\b\fs28\sb200\sa120 5. Como confirmar que funcionou\b0\fs22\par
+\pard\sa60 No mesmo PowerShell (como administrador), digite:\par
+\pard\li480\sa120\f1\fs20 Get-Content C:\\PedWer\\servico-saida.log -Tail 5\f0\fs22\par
+\pard\sa120 Deve aparecer uma linha parecida com \f1 "sincroniza\'e7\'e3o ok em ...ms (N clientes, M produtos)"\f0 , repetindo a cada 30 segundos. Isso confirma que o console est\'e1 lendo os dados corretamente e enviando para o servidor central. Avise o suporte para conferirmos tamb\'e9m do lado central que os dados desta instala\'e7\'e3o chegaram certinho.\par
+
+\pard\b\fs28\sb200\sa120 6. Perguntas frequentes\b0\fs22\par
+\pard\sa60\b Isso vai deixar o sistema mais lento?\b0\par
+\pard\sa120 N\'e3o. O console faz consultas leves e pontuais a cada 30 segundos \'96 n\'e3o compete de forma relevante com o sistema principal.\par
+\pard\sa60\b Isso abre alguma porta ou brecha de seguran\'e7a no servidor?\b0\par
+\pard\sa120 N\'e3o. Ele s\'f3 faz conex\'f5es de sa\'edda (como um navegador acessando um site) \'96 nunca fica esperando conex\'f5es chegarem, ent\'e3o n\'e3o precisa (nem deve) abrir nenhuma porta de entrada no firewall.\par
+\pard\sa60\b Posso remover depois, se precisar?\b0\par
+\pard\sa120 Sim, a qualquer momento, sem deixar rastro no sistema atual. Comandos (PowerShell como administrador):\par
+\pard\li480\sa60\f1\fs20 Stop-Service PedWerIntegrador\f0\fs22\par
+\pard\li480\sa120\f1\fs20 C:\\PedWer\\nssm.exe remove PedWerIntegrador confirm\f0\fs22\par
+\pard\sa120 Depois disso, basta apagar a pasta \f1 C:\\PedWer\f0 .\par
+\pard\sa60\b E se a internet cair no meio do dia?\b0\par
+\pard\sa120 O console tenta de novo sozinho a cada 30 segundos, sem precisar de ningu\'e9m mexer em nada. Quando a conex\'e3o voltar, ele retoma normalmente.\par
+
+\pard\b\fs28\sb200\sa120 7. Problemas comuns\b0\fs22\par
+\pard\sa60\b Mensagem "Defina a vari\'e1vel de ambiente PEDWER_PASTA_BASE" ao iniciar\b0\par
+\pard\sa120 O Passo 6 n\'e3o foi feito, ou o caminho digitado est\'e1 incorreto. Repita o Passo 6 com o caminho correto.\par
+\pard\sa60\b No arquivo de log aparece "sincroniza\'e7\'e3o falhou"\b0\par
+\pard\sa120 Geralmente \'e9 o endere\'e7o do servidor central incorreto ou sem acesso de sa\'edda liberado, ou o componente da se\'e7\'e3o 2.4 (VFPOLEDB) n\'e3o instalado. Para testar a conex\'e3o com o servidor central:\par
+\pard\li480\sa120\f1\fs20 Test-NetConnection ENDERECO-DO-SERVIDOR-CENTRAL -Port 443\f0\fs22\par
+\pard\sa60\b Erro relacionado a "OLE DB" ou "provider" ao abrir os dados\b0\par
+\pard\sa120 Normalmente indica que o VFPOLEDB (se\'e7\'e3o 2.4) n\'e3o est\'e1 instalado, ou que o caminho configurado no Passo 6 n\'e3o existe ou n\'e3o tem permiss\'e3o de leitura para a conta que roda o servi\'e7o (por padr\'e3o, "Sistema Local" \'96 tem acesso amplo, mas vale conferir se a pasta n\'e3o tem restri\'e7\'f5es especiais).\par
+\pard\sa120\b Qualquer d\'favida ou situa\'e7\'e3o n\'e3o coberta aqui: entre em contato com o suporte antes de tentar contornar o problema por conta pr\'f3pria.\b0\par
+
+\pard\par\pard\qc\fs18\cf3 Documento de instala\'e7\'e3o \'96 PedWer Web \'96 uso interno\cf0\par
+}
