@@ -201,11 +201,6 @@ function App() {
   const negociacaoVigente = cotacao?.negociacao.situacao === 'vigente'
   const negociacaoVencida = cotacao?.negociacao.situacao === 'vencida'
 
-  function alterarDesconto(percentual: number) {
-    setDescPercentual(percentual)
-    if (precoTabelaAtual > 0) setPrecoDigitado(Math.round(precoTabelaAtual * (1 - percentual / 100) * 100) / 100)
-  }
-
   function alterarPreco(preco: number) {
     setPrecoDigitado(preco)
     if (precoTabelaAtual > 0) {
@@ -302,12 +297,6 @@ function App() {
   // Preço ↔ desconto% têm mão dupla, igual na inclusão do item — usando o
   // preço de tabela já ajustado que ficou gravado no item (não precisa
   // recotar cliente+produto de novo, já foi feito quando o item entrou).
-  function edAlterarDesconto(percentual: number) {
-    setEdDesconto(percentual)
-    const tabela = itens.find((i) => i.numero === itemEditando)?.precoTabelaAjustado ?? 0
-    if (tabela > 0) setEdPreco(Math.round(tabela * (1 - percentual / 100) * 100) / 100)
-  }
-
   function edAlterarPreco(preco: number) {
     setEdPreco(preco)
     const tabela = itens.find((i) => i.numero === itemEditando)?.precoTabelaAjustado ?? 0
@@ -634,10 +623,6 @@ function App() {
                       Valor unitário
                       <input type="number" min={0} step="0.01" value={precoDigitado} disabled={negociacaoVigente} title={negociacaoVigente ? 'Preço definido pela negociação' : undefined} onChange={(e) => alterarPreco(Number(e.target.value))} />
                     </label>
-                    <label>
-                      Desc. %
-                      <input type="number" step="0.01" value={descPercentual} disabled={negociacaoVigente} onChange={(e) => alterarDesconto(Number(e.target.value))} />
-                    </label>
                     <button type="button" className="primario" disabled={carregandoItem || negociacaoVencida} onClick={adicionarItem}>
                       {carregandoItem ? 'Calculando...' : '+ Adicionar'}
                     </button>
@@ -694,19 +679,7 @@ function App() {
                                   i.precoFinal.toFixed(2)
                                 )}
                               </td>
-                              <td>
-                                {editando ? (
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    className="input-linha"
-                                    value={edDesconto}
-                                    onChange={(e) => edAlterarDesconto(Number(e.target.value))}
-                                  />
-                                ) : (
-                                  `${i.percentualDesconto.toFixed(2)}%`
-                                )}
-                              </td>
+                              <td>{editando ? `${edDesconto.toFixed(2)}%` : `${i.percentualDesconto.toFixed(2)}%`}</td>
                               <td title={i.fiscalNaoCalculado}>{i.valorIpi !== null ? i.valorIpi.toFixed(2) : '⚠'}</td>
                               <td title={i.fiscalNaoCalculado}>{i.valorIcmSt !== null ? i.valorIcmSt.toFixed(2) : '⚠'}</td>
                               <td>

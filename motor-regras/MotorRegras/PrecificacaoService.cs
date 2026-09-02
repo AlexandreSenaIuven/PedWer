@@ -77,9 +77,13 @@ public static class PrecificacaoService
 
             if (descontoConcedido > tetoValor)
             {
+                // Comparação interna é em R$ (RF-084, fórmula literal do VFP), mas quem
+                // vende pensa em percentual — a mensagem mostra os dois lados convertidos,
+                // não os valores em R$ usados na conta.
+                var descontoPercentualConcedido = Arredondar(descontoConcedido / precoTabelaAjustado * 100m);
                 throw new PrecificacaoException(
                     "DESCONTO_ACIMA_DO_TETO",
-                    $"Desconto de {descontoConcedido:F2} excede o teto de {tetoValor:F2} para este cliente/produto (RF-083/086).");
+                    $"Desconto de {descontoPercentualConcedido:F2}% excede o teto de {percentualTetoDesconto:F2}% para este cliente/produto (RF-083/086).");
             }
 
             precoFinal = precoDigitado.Value;
