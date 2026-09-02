@@ -748,10 +748,6 @@ function App() {
               <span className="valor-total">{totalNota.toFixed(2)}</span>
             </div>
             <div className="linha-total">
-              <span>Desconto geral</span>
-              <span className="valor-total">0,00</span>
-            </div>
-            <div className="linha-total">
               <span>IPI</span>
               <span className="valor-total">{totalIpi.toFixed(2)}</span>
             </div>
@@ -772,7 +768,7 @@ function App() {
                 ⚠ {itensSemFiscal.length} item(ns) sem imposto calculado: {itensSemFiscal[0].fiscalNaoCalculado}
               </p>
             )}
-            <p className="nota-totais">Desconto geral e frete ainda não são calculados. ICMS próprio está embutido no preço (não soma).</p>
+            <p className="nota-totais">Frete ainda não é calculado. ICMS próprio está embutido no preço (não soma).</p>
           </aside>
 
           {estadoPedido === 'Rascunho' && itens.length > 0 && (
