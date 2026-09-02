@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ComandoCriarPedido, ItemComando } from './comandos.types';
+import { ComandoCriarPedido, ItemComando, ItemCompra } from './comandos.types';
 
 /**
  * Fila de comandos "criar pedido" — o console faz poll de
@@ -32,7 +32,7 @@ export class ComandosService {
     return pendentes;
   }
 
-  registrarResultado(id: string, sucesso: boolean, referenciaExterna?: string, erro?: string) {
+  registrarResultado(id: string, sucesso: boolean, referenciaExterna?: string, erro?: string, ultimasCompras?: ItemCompra[]) {
     const comando = this.comandos.get(id);
     if (!comando) {
       this.logger.warn(`Resultado recebido para comando desconhecido: ${id}`);
@@ -41,6 +41,7 @@ export class ComandosService {
     comando.status = sucesso ? 'Gravado' : 'Erro';
     comando.erro = erro;
     if (sucesso && referenciaExterna) comando.referenciaExterna = referenciaExterna;
+    if (sucesso && ultimasCompras) comando.ultimasCompras = ultimasCompras;
   }
 
   buscarPorId(id: string): ComandoCriarPedido {

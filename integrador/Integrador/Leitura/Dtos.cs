@@ -189,3 +189,19 @@ public sealed record TabplanDto(
     string Email);
 
 public sealed record EscadaComissaoItemDto(decimal Negocio, decimal LimiteDesconto, decimal PercentualComissao);
+
+/// <summary>
+/// Uma linha de "Últimas Compras" (botão homônimo do ped_wer.scx, classe
+/// `ultimas_compras` em artsoft.vcx) — origem real confirmada em
+/// `query_cadmov_vendas.qpr` (25/08/2026): `cadmov` filtrada por
+/// `es_mov="S"` (venda) e `tipos.ind_fatura="S"` (só operação faturável),
+/// não `pedido.dbf`. `cadmov` tem 900k+ linhas por empresa — nunca
+/// sincronizada por inteiro, só consultada sob demanda pelo console.
+/// </summary>
+public sealed record ItemCompraDto(
+    DateTime DataMov,
+    string NotaFiscal,
+    string Grupo,
+    string Referencia,
+    decimal Quantidade,
+    decimal ValorUnitario);

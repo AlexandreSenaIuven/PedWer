@@ -59,4 +59,17 @@ public sealed record EntregaComandoDto(
     string? Observacao1,
     string? Observacao2);
 
-public sealed record ResultadoComandoRequest(bool Sucesso, string? ReferenciaExterna, string? Erro);
+/// <summary>Uma linha de "Últimas Compras" no formato de transporte (data como string ISO, igual ao resto do contrato).</summary>
+public sealed record ItemCompraComandoDto(
+    string DataMov,
+    string NotaFiscal,
+    string Grupo,
+    string Referencia,
+    decimal Quantidade,
+    decimal ValorUnitario);
+
+public sealed record ResultadoComandoRequest(
+    bool Sucesso,
+    string? ReferenciaExterna,
+    string? Erro,
+    List<ItemCompraComandoDto>? UltimasCompras = null);

@@ -1,5 +1,6 @@
 using Dominio;
 using Integrador.Escrita;
+using Integrador.Leitura;
 using MotorRegras;
 
 namespace Integrador.Servico;
@@ -53,6 +54,19 @@ public sealed class LacoComandos(ApiCentralCliente api, TimeSpan intervalo)
                 new CligeralRepositorio().Gravar(comando.ReferenciaExterna, comando.Entrega ?? new EntregaComandoDto(null, null, null, null, null, null, null));
                 await api.ReportarResultadoAsync(comando.Id, new ResultadoComandoRequest(true, comando.ReferenciaExterna, null));
                 Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] comando {comando.Id} dados de entrega gravados em cligeral ({comando.ReferenciaExterna}).");
+                return;
+            }
+
+            if (string.Equals(comando.Tipo, "ConsultarUltimasCompras", StringComparison.OrdinalIgnoreCase))
+            {
+                // Consulta pura, sem gravação — botão "Últimas Compras" do ped_wer.scx (RF §"e os botões?", 02/09/2026).
+                var compras = new CadmovRepositorio().ListarUltimasCompras(comando.CodigoEmpresa, comando.CodigoCliente, limite: 30);
+                var comprasComando = compras
+                    .Select(c => new ItemCompraComandoDto(
+                        c.DataMov.ToString("yyyy-MM-dd"), c.NotaFiscal, c.Grupo, c.Referencia, c.Quantidade, c.ValorUnitario))
+                    .ToList();
+                await api.ReportarResultadoAsync(comando.Id, new ResultadoComandoRequest(true, null, null, comprasComando));
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] comando {comando.Id} últimas compras consultadas ({comprasComando.Count} linhas, cliente {comando.CodigoCliente}).");
                 return;
             }
 

@@ -419,4 +419,28 @@ export class PedidosController {
     const comando = this.comandos.buscarPorId(comandoId);
     return { status: comando.status, referenciaExterna: comando.referenciaExterna, erro: comando.erro };
   }
+
+  // Botão "Últimas Compras" do ped_wer.scx — consulta pura, sem ligação com
+  // nenhum pedido em digitação. Mesma fila/poll de comando, resultado
+  // devolvido em `ultimasCompras` (ver GET /comandos/:id).
+  @Post('clientes/:codigo/ultimas-compras')
+  consultarUltimasCompras(@Param('codigo') codigo: string, @Body() body: { empresa: string }) {
+    const cliente = this.cache.buscarCliente(codigo);
+    if (!cliente) throw new NotFoundException(`Cliente ${codigo} não encontrado (ou ainda não sincronizado).`);
+
+    const comando = this.comandos.criar({
+      tipo: 'ConsultarUltimasCompras',
+      tipoOperacao: '',
+      codigoEmpresa: body.empresa,
+      codigoCliente: codigo,
+      data: hoje(),
+      autor: '',
+      referenciaExterna: '',
+      vendedorCodigo1: '',
+      vendedorCodigo2: '',
+      tipoVendedorParaComissao: '',
+      itens: [],
+    });
+    return { comandoId: comando.id, status: comando.status };
+  }
 }

@@ -226,4 +226,29 @@ export const api = {
     fetch(urlApi(`pedidos/${comandoId}/status`)).then((r) =>
       tratar<{ status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro'; referenciaExterna: string; erro?: string }>(r),
     ),
+
+  // Botão "Últimas Compras" do ped_wer.scx original — vem de `cadmov`
+  // (venda já faturada), consultado sob demanda pelo console (não é um
+  // dado sincronizado). Fila igual à de criar pedido: dispara o comando,
+  // depois faz poll em statusUltimasCompras até ele voltar.
+  consultarUltimasCompras: (empresa: string, codigoCliente: string) =>
+    fetch(urlApi(`clientes/${codigoCliente}/ultimas-compras`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresa }),
+    }).then((r) => tratar<{ comandoId: string; status: string }>(r)),
+
+  statusUltimasCompras: (comandoId: string) =>
+    fetch(urlApi(`comandos/${comandoId}`)).then((r) =>
+      tratar<{ status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro'; erro?: string; ultimasCompras?: ItemCompra[] }>(r),
+    ),
+}
+
+export interface ItemCompra {
+  dataMov: string
+  notaFiscal: string
+  grupo: string
+  referencia: string
+  quantidade: number
+  valorUnitario: number
 }

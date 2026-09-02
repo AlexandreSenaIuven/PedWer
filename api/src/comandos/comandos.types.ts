@@ -45,11 +45,30 @@ export interface DadosEntregaComando {
   observacao2: string;
 }
 
+/**
+ * Uma linha de "Últimas Compras" (botão do ped_wer.scx) — vem de `cadmov`
+ * (venda faturada), não de `pedido.dbf`. Consulta sob demanda pelo console,
+ * nunca sincronizada por inteiro (900k+ linhas por empresa).
+ */
+export interface ItemCompra {
+  dataMov: string;
+  notaFiscal: string;
+  grupo: string;
+  referencia: string;
+  quantidade: number;
+  valorUnitario: number;
+}
+
 export interface ComandoCriarPedido {
   id: string;
-  /** Sem tipo = 'CriarPedido' (compatibilidade). 'GravarEntrega' grava só o cligeral do pedido já criado. */
-  tipo?: 'CriarPedido' | 'GravarEntrega';
+  /**
+   * Sem tipo = 'CriarPedido' (compatibilidade). 'GravarEntrega' grava só o
+   * cligeral do pedido já criado. 'ConsultarUltimasCompras' não grava nada
+   * — só lê `cadmov` e devolve em `ultimasCompras`.
+   */
+  tipo?: 'CriarPedido' | 'GravarEntrega' | 'ConsultarUltimasCompras';
   entrega?: DadosEntregaComando;
+  ultimasCompras?: ItemCompra[];
   tipoOperacao: string;
   codigoEmpresa: string;
   codigoCliente: string;

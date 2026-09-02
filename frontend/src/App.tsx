@@ -5,6 +5,7 @@ import {
   type ClienteResumo,
   type CotacaoItem,
   type EmpresaCompleta,
+  type ItemCompra,
   type ProdutoResumo,
   type ReferenciaSimples,
   type ResultadoCredito,
@@ -16,6 +17,7 @@ import { CampoBusca } from './components/CampoBusca'
 import { Login } from './components/Login'
 import { TopBar } from './components/TopBar'
 import { DialogoEntrega } from './components/DialogoEntrega'
+import { UltimasCompras } from './components/UltimasCompras'
 import { VisualizadorPdf } from './components/VisualizadorPdf'
 // O modelo PE (impressaoPedido.gerarPdfPedido) fica no código, mas fora da
 // UI por decisão do usuário (24/08/2026): por ora só o modelo WE é usado.
@@ -86,6 +88,10 @@ function App() {
   const [edCarregando, setEdCarregando] = useState(false)
   const [edErro, setEdErro] = useState<string | null>(null)
   const [credito, setCredito] = useState<ResultadoCredito | null>(null)
+  const [ultimasComprasAberta, setUltimasComprasAberta] = useState(false)
+  const [ultimasComprasCarregando, setUltimasComprasCarregando] = useState(false)
+  const [ultimasComprasErro, setUltimasComprasErro] = useState<string | null>(null)
+  const [ultimasCompras, setUltimasCompras] = useState<ItemCompra[] | null>(null)
 
   const [produtoItem, setProdutoItem] = useState<ProdutoResumo | null>(null)
   const [produtoBuscaAberta, setProdutoBuscaAberta] = useState(false)
@@ -279,6 +285,35 @@ function App() {
     const restantes = itens.filter((i) => i.numero !== numero)
     setItens(restantes)
     if (restantes.length === 0) setLinhaNegocioGrupo(null)
+  }
+
+  // Botão "Últimas Compras" do ped_wer.scx original — consulta sob demanda
+  // (fila de comando, mesmo padrão de criar pedido), nunca um dado
+  // sincronizado (vem de `cadmov`, 900k+ linhas por empresa).
+  async function abrirUltimasCompras() {
+    if (!cliente) return
+    setUltimasComprasAberta(true)
+    setUltimasComprasCarregando(true)
+    setUltimasComprasErro(null)
+    setUltimasCompras(null)
+    try {
+      const { comandoId } = await api.consultarUltimasCompras(empresa, cliente.codigo)
+      const intervalo = setInterval(async () => {
+        const status = await api.statusUltimasCompras(comandoId)
+        if (status.status === 'Gravado') {
+          clearInterval(intervalo)
+          setUltimasCompras(status.ultimasCompras ?? [])
+          setUltimasComprasCarregando(false)
+        } else if (status.status === 'Erro') {
+          clearInterval(intervalo)
+          setUltimasComprasErro(status.erro ?? 'Não foi possível consultar as últimas compras.')
+          setUltimasComprasCarregando(false)
+        }
+      }, 1000)
+    } catch (e) {
+      setUltimasComprasErro((e as Error).message)
+      setUltimasComprasCarregando(false)
+    }
   }
 
   function iniciarEdicaoItem(item: ItemPedido) {
@@ -585,6 +620,11 @@ function App() {
                 <p className={`credito credito-${credito.status}`}>
                   Crédito do grupo ({credito.matrizNome}): limite {credito.limite.toFixed(2)}, devedor {credito.saldoDevedorGrupo.toFixed(2)} — {credito.status}
                 </p>
+              )}
+              {cliente && (
+                <button type="button" className="link" onClick={abrirUltimasCompras}>
+                  Últimas compras
+                </button>
               )}
             </section>
 
@@ -911,6 +951,15 @@ function App() {
           onFechar={novoPedido}
         />
       )}
+
+      <UltimasCompras
+        aberto={ultimasComprasAberta}
+        clienteNome={cliente ? `${cliente.codigo} — ${cliente.nome}` : ''}
+        carregando={ultimasComprasCarregando}
+        erro={ultimasComprasErro}
+        compras={ultimasCompras}
+        onFechar={() => setUltimasComprasAberta(false)}
+      />
     </div>
   )
 }
