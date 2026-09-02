@@ -16,7 +16,7 @@ public sealed class CadmatRepositorio
     private const string Colunas =
         "grupo, referencia, descricao, prc_venda, gradecol, gradegrp, qtd_pedida, qtd_fpedid, " +
         "ipi, ind_ipi, cod_proc, ncm, val_icm, val_icm_su, desp_subst, perm_icm, legislacao, beneficio, unid_emb, peso_unit, volume, " +
-        "cstpis, aliqpis, cstcof, aliqcof";
+        "cstpis, aliqpis, cstcof, aliqcof, caracter";
 
     public CadmatDto? BuscarPorChave(string codigoEmpresa, string grupo, string referencia)
     {
@@ -119,5 +119,6 @@ public sealed class CadmatRepositorio
         Str(reader, "cstpis"),
         Dec(reader, "aliqpis"),
         Str(reader, "cstcof"),
-        Dec(reader, "aliqcof"));
+        Dec(reader, "aliqcof"),
+        Str(reader, "caracter"));
 }

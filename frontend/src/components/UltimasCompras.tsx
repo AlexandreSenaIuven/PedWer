@@ -45,7 +45,16 @@ export function UltimasCompras({ aberto, clienteNome, carregando, erro, compras,
                   <tr key={i}>
                     <td>{new Date(c.dataMov + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
                     <td>{c.notaFiscal}</td>
-                    <td>{c.grupo}|{c.referencia}</td>
+                    <td>
+                      {c.grupo}|{c.referencia}
+                      {(c.produtoDescricao || c.produtoCaracter) && (
+                        <>
+                          {' — '}
+                          {c.produtoDescricao}
+                          {c.produtoCaracter ? ` ${c.produtoCaracter}` : ''}
+                        </>
+                      )}
+                    </td>
                     <td>{c.quantidade}</td>
                     <td>{c.valorUnitario.toFixed(2)}</td>
                     <td>{(c.quantidade * c.valorUnitario).toFixed(2)}</td>

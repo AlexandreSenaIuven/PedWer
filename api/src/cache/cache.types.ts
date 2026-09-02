@@ -61,6 +61,8 @@ export interface ProdutoFisico {
   aliqPis: number;
   cstCof: string;
   aliqCof: number;
+  /** Complemento da descrição (cor/tamanho/variante) — sempre mostrado junto com `descricao` no VFP original. */
+  caracter: string;
 }
 
 export interface CadsubFisico {

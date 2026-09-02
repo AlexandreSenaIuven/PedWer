@@ -57,6 +57,9 @@ export interface ItemCompra {
   referencia: string;
   quantidade: number;
   valorUnitario: number;
+  /** Preenchidos na leitura (GET /comandos/:id), a partir do catálogo já sincronizado — não vêm do console. */
+  produtoDescricao?: string;
+  produtoCaracter?: string;
 }
 
 export interface ComandoCriarPedido {

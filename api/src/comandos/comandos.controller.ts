@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { CacheService } from '../cache/cache.service';
 import { ComandosService } from './comandos.service';
 import type { ItemCompra } from './comandos.types';
 
@@ -11,7 +12,10 @@ interface ResultadoComandoBody {
 
 @Controller('comandos')
 export class ComandosController {
-  constructor(private readonly comandos: ComandosService) {}
+  constructor(
+    private readonly comandos: ComandosService,
+    private readonly cache: CacheService,
+  ) {}
 
   /** O console faz poll aqui — nunca o contrário. */
   @Get('pendentes')
@@ -35,7 +39,13 @@ export class ComandosController {
       status: comando.status,
       referenciaExterna: comando.referenciaExterna,
       erro: comando.erro,
-      ultimasCompras: comando.ultimasCompras,
+      // Descrição/característica não vêm do console (cadmov não tem esses
+      // campos) — preenchidas aqui a partir do catálogo já sincronizado,
+      // sem precisar de mais uma consulta ao VFP.
+      ultimasCompras: comando.ultimasCompras?.map((item) => {
+        const produto = this.cache.buscarProduto(comando.codigoEmpresa, item.grupo, item.referencia);
+        return { ...item, produtoDescricao: produto?.descricao, produtoCaracter: produto?.caracter };
+      }),
     };
   }
 }

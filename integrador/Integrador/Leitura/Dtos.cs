@@ -65,7 +65,10 @@ public sealed record CadmatDto(
     string CstPis,
     decimal AliqPis,
     string CstCof,
-    decimal AliqCof);
+    decimal AliqCof,
+    // Complemento da descrição (cor/tamanho/variante) — sempre mostrado
+    // junto com Descricao no VFP original (ex.: botão "Últimas Compras").
+    string Caracter);
 
 public sealed record NegociaDto(
     string CodCli,

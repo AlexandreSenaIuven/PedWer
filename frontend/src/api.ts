@@ -251,4 +251,6 @@ export interface ItemCompra {
   referencia: string
   quantidade: number
   valorUnitario: number
+  produtoDescricao?: string
+  produtoCaracter?: string
 }
