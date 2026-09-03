@@ -180,12 +180,15 @@ function App() {
   // Cotação na escolha do produto (como o VFP em txtAddText.LostFocus): preço
   // de tabela já ajustado ao cliente; se houver negociação vigente, o preço e
   // o % de desconto vêm dela; vencida → alerta e bloqueia o item.
+  // Preço sempre começa zerado (decisão do usuário, 03/09/2026) — o vendedor
+  // digita o valor a cada inclusão. Exceção: negociação vigente, que TRAVA o
+  // campo com o preço definido pela negociação (não é um "chute" a zerar).
   async function selecionarProduto(produto: ProdutoResumo) {
     setProdutoItem(produto)
     setErroItem(null)
     setCotacao(null)
     setDescPercentual(0)
-    setPrecoDigitado(produto.precoTabela)
+    setPrecoDigitado(0)
 
     if (!cliente) {
       setErroItem('Escolha o cliente antes do produto — o preço depende do cadastro dele.')
@@ -201,8 +204,10 @@ function App() {
         tipoOperacao: tipoOperacao?.codigo,
       })
       setCotacao(c)
-      setPrecoDigitado(c.precoSugerido)
-      setDescPercentual(Math.round(c.percentualDesconto * 100) / 100)
+      if (c.negociacao.situacao === 'vigente') {
+        setPrecoDigitado(c.precoSugerido)
+        setDescPercentual(Math.round(c.percentualDesconto * 100) / 100)
+      }
       if (c.negociacao.situacao === 'vencida') {
         setErroItem(`Negociação de preço deste produto venceu em ${c.negociacao.dataValidade} — venda não permitida. Renove a negociação antes de vender.`)
       }

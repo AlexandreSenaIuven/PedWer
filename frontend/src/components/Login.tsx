@@ -46,9 +46,10 @@ export function Login({ empresas, onEntrar }: LoginProps) {
           Usuário
           <input
             value={usuario}
-            onChange={(e) => setUsuario(e.target.value)}
+            onChange={(e) => setUsuario(e.target.value.toUpperCase())}
             autoFocus
             autoComplete="username"
+            autoCapitalize="characters"
           />
         </label>
 

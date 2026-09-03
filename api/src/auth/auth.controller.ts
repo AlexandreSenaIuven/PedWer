@@ -19,7 +19,9 @@ export class AuthController {
 
   @Post('login')
   login(@Body() body: LoginBody) {
-    const usuario = body.usuario?.trim();
+    // Maiúsculas sempre: `caduser.identific` é indexado ao pé da letra (Map
+    // case-sensitive) e o VFP grava esse campo em maiúsculas.
+    const usuario = body.usuario?.trim().toUpperCase();
     const senha = body.senha ?? '';
     if (!usuario || !senha) throw new BadRequestException('Informe usuário e senha.');
 
