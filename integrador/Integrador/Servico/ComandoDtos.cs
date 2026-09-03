@@ -46,8 +46,11 @@ public sealed record ComandoPendenteDto(
     string VendedorCodigo2,
     string TipoVendedorParaComissao,
     List<ItemComandoDto> Itens,
-    string? Tipo,               // null/"CriarPedido" ou "GravarEntrega"
-    EntregaComandoDto? Entrega);
+    string? Tipo,               // null/"CriarPedido", "GravarEntrega", "ConsultarUltimasCompras", "ConsultarGiro" ou "ConsultarSaldoGeral"
+    EntregaComandoDto? Entrega,
+    // "ConsultarGiro"/"ConsultarSaldoGeral": produto é o primeiro (único) item de Itens (só Grupo/Referencia importam).
+    // "ConsultarSaldoGeral": quais empresas checar (Saldo Geral soma todas, não só a empresa da sessão).
+    List<string>? EmpresasParaSaldo);
 
 /// <summary>Tela "Dados Para Entrega" (form ped_ph do ERP) → cligeral.dbf.</summary>
 public sealed record EntregaComandoDto(
@@ -68,8 +71,21 @@ public sealed record ItemCompraComandoDto(
     decimal Quantidade,
     decimal ValorUnitario);
 
+/// <summary>Uma linha de "Giro" no formato de transporte.</summary>
+public sealed record ItemGiroComandoDto(
+    string DataMov,
+    string NotaFiscal,
+    string CliFor,
+    decimal Quantidade,
+    decimal ValorUnitario);
+
+/// <summary>Saldo de um produto numa empresa (linha de "Saldo Geral").</summary>
+public sealed record SaldoEmpresaComandoDto(string CodigoEmpresa, decimal QtdReal, decimal QtReserva);
+
 public sealed record ResultadoComandoRequest(
     bool Sucesso,
     string? ReferenciaExterna,
     string? Erro,
-    List<ItemCompraComandoDto>? UltimasCompras = null);
+    List<ItemCompraComandoDto>? UltimasCompras = null,
+    List<ItemGiroComandoDto>? Giro = null,
+    List<SaldoEmpresaComandoDto>? SaldoGeral = null);

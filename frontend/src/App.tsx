@@ -6,9 +6,11 @@ import {
   type CotacaoItem,
   type EmpresaCompleta,
   type ItemCompra,
+  type ItemGiro,
   type ProdutoResumo,
   type ReferenciaSimples,
   type ResultadoCredito,
+  type SaldoEmpresa,
   type UsuarioLogado,
 } from './api'
 import { Breadcrumb } from './components/Breadcrumb'
@@ -17,6 +19,8 @@ import { CampoBusca } from './components/CampoBusca'
 import { Login } from './components/Login'
 import { TopBar } from './components/TopBar'
 import { DialogoEntrega } from './components/DialogoEntrega'
+import { Giro } from './components/Giro'
+import { SaldoGeral } from './components/SaldoGeral'
 import { UltimasCompras } from './components/UltimasCompras'
 import { VisualizadorPdf } from './components/VisualizadorPdf'
 // O modelo PE (impressaoPedido.gerarPdfPedido) fica no código, mas fora da
@@ -92,6 +96,18 @@ function App() {
   const [ultimasComprasCarregando, setUltimasComprasCarregando] = useState(false)
   const [ultimasComprasErro, setUltimasComprasErro] = useState<string | null>(null)
   const [ultimasCompras, setUltimasCompras] = useState<ItemCompra[] | null>(null)
+
+  const [giroAberto, setGiroAberto] = useState(false)
+  const [giroProdutoNome, setGiroProdutoNome] = useState('')
+  const [giroCarregando, setGiroCarregando] = useState(false)
+  const [giroErro, setGiroErro] = useState<string | null>(null)
+  const [giro, setGiro] = useState<ItemGiro[] | null>(null)
+
+  const [saldoGeralAberto, setSaldoGeralAberto] = useState(false)
+  const [saldoGeralProdutoNome, setSaldoGeralProdutoNome] = useState('')
+  const [saldoGeralCarregando, setSaldoGeralCarregando] = useState(false)
+  const [saldoGeralErro, setSaldoGeralErro] = useState<string | null>(null)
+  const [saldoGeral, setSaldoGeral] = useState<SaldoEmpresa[] | null>(null)
 
   const [produtoItem, setProdutoItem] = useState<ProdutoResumo | null>(null)
   const [produtoBuscaAberta, setProdutoBuscaAberta] = useState(false)
@@ -313,6 +329,67 @@ function App() {
     } catch (e) {
       setUltimasComprasErro((e as Error).message)
       setUltimasComprasCarregando(false)
+    }
+  }
+
+  // Botão "Giro" — mesmo padrão de "Últimas Compras", filtrado por produto
+  // em vez de cliente (RF §"botões de Giro e de Saldo Geral", 02/09/2026).
+  async function abrirGiro(produto: ProdutoResumo) {
+    setGiroProdutoNome(`${produto.grupo}|${produto.referencia} — ${produto.descricao}`)
+    setGiroAberto(true)
+    setGiroCarregando(true)
+    setGiroErro(null)
+    setGiro(null)
+    try {
+      const { comandoId } = await api.consultarGiro(empresa, produto.grupo, produto.referencia)
+      const intervalo = setInterval(async () => {
+        const status = await api.statusGiro(comandoId)
+        if (status.status === 'Gravado') {
+          clearInterval(intervalo)
+          setGiro(status.giro ?? [])
+          setGiroCarregando(false)
+        } else if (status.status === 'Erro') {
+          clearInterval(intervalo)
+          setGiroErro(status.erro ?? 'Não foi possível consultar o giro.')
+          setGiroCarregando(false)
+        }
+      }, 1000)
+    } catch (e) {
+      setGiroErro((e as Error).message)
+      setGiroCarregando(false)
+    }
+  }
+
+  // Botão "Saldo Geral" — saldo do produto em cada empresa real (nunca a
+  // "PRINCIPAL" sintética, por isso `empresas` e não `empresasComPrincipal`).
+  async function abrirSaldoGeral(produto: ProdutoResumo) {
+    setSaldoGeralProdutoNome(`${produto.grupo}|${produto.referencia} — ${produto.descricao}`)
+    setSaldoGeralAberto(true)
+    setSaldoGeralCarregando(true)
+    setSaldoGeralErro(null)
+    setSaldoGeral(null)
+    try {
+      const { comandoId } = await api.consultarSaldoGeral(
+        empresa,
+        produto.grupo,
+        produto.referencia,
+        empresas.map((emp) => emp.codigo),
+      )
+      const intervalo = setInterval(async () => {
+        const status = await api.statusSaldoGeral(comandoId)
+        if (status.status === 'Gravado') {
+          clearInterval(intervalo)
+          setSaldoGeral(status.saldoGeral ?? [])
+          setSaldoGeralCarregando(false)
+        } else if (status.status === 'Erro') {
+          clearInterval(intervalo)
+          setSaldoGeralErro(status.erro ?? 'Não foi possível consultar o saldo geral.')
+          setSaldoGeralCarregando(false)
+        }
+      }, 1000)
+    } catch (e) {
+      setSaldoGeralErro((e as Error).message)
+      setSaldoGeralCarregando(false)
     }
   }
 
@@ -867,6 +944,22 @@ function App() {
           { cabecalho: 'Código', render: (p) => `${p.grupo}|${p.referencia}` },
           { cabecalho: 'Descrição', render: (p) => p.descricao },
           { cabecalho: 'Preço tabela', render: (p) => p.precoTabela.toFixed(2) },
+          {
+            cabecalho: 'Giro',
+            render: (p) => (
+              <button type="button" className="link" onClick={(e) => { e.stopPropagation(); abrirGiro(p) }}>
+                Giro
+              </button>
+            ),
+          },
+          {
+            cabecalho: 'Saldo geral',
+            render: (p) => (
+              <button type="button" className="link" onClick={(e) => { e.stopPropagation(); abrirSaldoGeral(p) }}>
+                Saldo geral
+              </button>
+            ),
+          },
         ]}
       />
 
@@ -959,6 +1052,24 @@ function App() {
         erro={ultimasComprasErro}
         compras={ultimasCompras}
         onFechar={() => setUltimasComprasAberta(false)}
+      />
+
+      <Giro
+        aberto={giroAberto}
+        produtoNome={giroProdutoNome}
+        carregando={giroCarregando}
+        erro={giroErro}
+        giro={giro}
+        onFechar={() => setGiroAberto(false)}
+      />
+
+      <SaldoGeral
+        aberto={saldoGeralAberto}
+        produtoNome={saldoGeralProdutoNome}
+        carregando={saldoGeralCarregando}
+        erro={saldoGeralErro}
+        saldos={saldoGeral}
+        onFechar={() => setSaldoGeralAberto(false)}
       />
     </div>
   )

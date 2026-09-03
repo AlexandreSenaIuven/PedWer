@@ -406,6 +406,13 @@ button.link {
   font-size: 0.9rem;
 }
 
+.modal-total {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 0.6rem;
+  text-align: right;
+}
+
 .tabela-scroll {
   overflow-x: auto;
   margin-top: 1rem;

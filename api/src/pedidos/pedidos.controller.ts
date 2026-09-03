@@ -443,4 +443,70 @@ export class PedidosController {
     });
     return { comandoId: comando.id, status: comando.status };
   }
+
+  // Botão "Giro" do ped_wer.scx — mesmo padrão de "Últimas Compras", mas
+  // filtrado por produto em vez de cliente. Produto vai como item único de
+  // `itens` (só grupo/referência importam para o console).
+  @Post('produtos/:grupo/:referencia/giro')
+  consultarGiro(
+    @Param('grupo') grupo: string,
+    @Param('referencia') referencia: string,
+    @Body() body: { empresa: string },
+  ) {
+    const comando = this.comandos.criar({
+      tipo: 'ConsultarGiro',
+      tipoOperacao: '',
+      codigoEmpresa: body.empresa,
+      codigoCliente: '',
+      data: hoje(),
+      autor: '',
+      referenciaExterna: '',
+      vendedorCodigo1: '',
+      vendedorCodigo2: '',
+      tipoVendedorParaComissao: '',
+      itens: [itemProdutoParaConsulta(grupo, referencia)],
+    });
+    return { comandoId: comando.id, status: comando.status };
+  }
+
+  // Botão "Saldo Geral" — saldo de estoque do produto em cada empresa
+  // real (nunca a "PRINCIPAL", que é catálogo, não estoque físico).
+  @Post('produtos/:grupo/:referencia/saldo-geral')
+  consultarSaldoGeral(
+    @Param('grupo') grupo: string,
+    @Param('referencia') referencia: string,
+    @Body() body: { empresa: string; empresas: string[] },
+  ) {
+    const comando = this.comandos.criar({
+      tipo: 'ConsultarSaldoGeral',
+      tipoOperacao: '',
+      codigoEmpresa: body.empresa,
+      codigoCliente: '',
+      data: hoje(),
+      autor: '',
+      referenciaExterna: '',
+      vendedorCodigo1: '',
+      vendedorCodigo2: '',
+      tipoVendedorParaComissao: '',
+      itens: [itemProdutoParaConsulta(grupo, referencia)],
+      empresasParaSaldo: body.empresas,
+    });
+    return { comandoId: comando.id, status: comando.status };
+  }
+}
+
+// Item "vazio" usado só para carregar grupo/referência até o console nos
+// comandos de consulta (Giro/Saldo Geral) — os demais campos não são lidos.
+function itemProdutoParaConsulta(grupo: string, referencia: string): ItemComando {
+  return {
+    grupo,
+    referencia,
+    gradegrp: '',
+    quantidade: 0,
+    precoTabelaAjustado: 0,
+    precoFinal: 0,
+    percentualDesconto: 0,
+    origem: 'TabelaSemDesconto',
+    fiscal: null,
+  };
 }

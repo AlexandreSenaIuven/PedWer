@@ -208,3 +208,30 @@ public sealed record ItemCompraDto(
     string Referencia,
     decimal Quantidade,
     decimal ValorUnitario);
+
+/// <summary>
+/// Botão "Giro" do ped_wer.scx — mesma origem de "Últimas Compras"
+/// (`cadmov`, `es_mov="S"`, `tipos.ind_fatura="S"`), só que filtrada por
+/// PRODUTO em vez de cliente: quem tem comprado este produto e quando.
+/// Definição não confirmada no código-fonte original (02/09/2026) — nem o
+/// próprio usuário lembrava a regra exata, e o botão não tem um .qpr
+/// próprio como "Últimas Compras" tinha; é a interpretação mais direta do
+/// nome ("giro" = movimento de venda do produto), reaproveitando uma fonte
+/// já confirmada. Revisar se o usuário confirmar que é outra coisa.
+/// </summary>
+public sealed record ItemGiroDto(
+    DateTime DataMov,
+    string NotaFiscal,
+    string CliFor,
+    decimal Quantidade,
+    decimal ValorUnitario);
+
+/// <summary>
+/// Botão "Saldo Geral" — saldo de estoque (`cadmat.qtdreal`/`qt_reserva`)
+/// do produto em cada empresa real (não a raiz/PRINCIPAL, que é catálogo,
+/// não estoque físico). Definição também não confirmada no fonte — é o
+/// entendimento do próprio usuário ("saldo do produto em todos os
+/// estoques"), que não foi possível verificar linha a linha no VFP desta
+/// vez (ver nota em ItemGiroDto).
+/// </summary>
+public sealed record SaldoEmpresaDto(string CodigoEmpresa, decimal QtdReal, decimal QtReserva);

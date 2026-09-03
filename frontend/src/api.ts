@@ -242,6 +242,33 @@ export const api = {
     fetch(urlApi(`comandos/${comandoId}`)).then((r) =>
       tratar<{ status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro'; erro?: string; ultimasCompras?: ItemCompra[] }>(r),
     ),
+
+  // Botão "Giro" — mesmo padrão de "Últimas Compras", filtrado por produto.
+  consultarGiro: (empresa: string, grupo: string, referencia: string) =>
+    fetch(urlApi(`produtos/${grupo}/${referencia}/giro`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresa }),
+    }).then((r) => tratar<{ comandoId: string; status: string }>(r)),
+
+  statusGiro: (comandoId: string) =>
+    fetch(urlApi(`comandos/${comandoId}`)).then((r) =>
+      tratar<{ status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro'; erro?: string; giro?: ItemGiro[] }>(r),
+    ),
+
+  // Botão "Saldo Geral" — saldo do produto em cada empresa (`empresas` são
+  // os códigos já carregados na sessão, sem a "PRINCIPAL" sintética).
+  consultarSaldoGeral: (empresa: string, grupo: string, referencia: string, empresas: string[]) =>
+    fetch(urlApi(`produtos/${grupo}/${referencia}/saldo-geral`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ empresa, empresas }),
+    }).then((r) => tratar<{ comandoId: string; status: string }>(r)),
+
+  statusSaldoGeral: (comandoId: string) =>
+    fetch(urlApi(`comandos/${comandoId}`)).then((r) =>
+      tratar<{ status: 'Pendente' | 'Processando' | 'Gravado' | 'Erro'; erro?: string; saldoGeral?: SaldoEmpresa[] }>(r),
+    ),
 }
 
 export interface ItemCompra {
@@ -253,4 +280,19 @@ export interface ItemCompra {
   valorUnitario: number
   produtoDescricao?: string
   produtoCaracter?: string
+}
+
+export interface ItemGiro {
+  dataMov: string
+  notaFiscal: string
+  cliFor: string
+  quantidade: number
+  valorUnitario: number
+  clienteNome?: string
+}
+
+export interface SaldoEmpresa {
+  codigoEmpresa: string
+  qtdReal: number
+  qtReserva: number
 }

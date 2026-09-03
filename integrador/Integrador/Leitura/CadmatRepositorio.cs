@@ -121,4 +121,30 @@ public sealed class CadmatRepositorio
         Str(reader, "cstcof"),
         Dec(reader, "aliqcof"),
         Str(reader, "caracter"));
+
+    /// <summary>
+    /// Botão "Saldo Geral" — saldo de estoque do produto em cada empresa
+    /// real (uma pasta por empresa, sem JOIN entre elas). Não inclui
+    /// `VfpConexao.CodigoPrincipal`: é catálogo da raiz, não um estoque
+    /// físico a mais.
+    /// </summary>
+    public IReadOnlyList<SaldoEmpresaDto> ConsultarSaldo(IReadOnlyList<string> empresas, string grupo, string referencia)
+    {
+        var resultado = new List<SaldoEmpresaDto>();
+        foreach (var empresa in empresas)
+        {
+            using var conn = VfpConexao.AbrirEmpresa(empresa);
+            using var cmd = new OleDbCommand("SELECT grupo, referencia, qtdreal, qt_reserva FROM cadmat WHERE grupo = ? AND referencia = ?", conn);
+            cmd.Parameters.AddWithValue("@grupo", grupo);
+            cmd.Parameters.AddWithValue("@referencia", referencia);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!ChaveExata(Str(reader, "grupo"), grupo) || !ChaveExata(Str(reader, "referencia"), referencia)) continue; // RF-105
+                resultado.Add(new SaldoEmpresaDto(empresa, Dec(reader, "qtdreal"), Dec(reader, "qt_reserva")));
+                break;
+            }
+        }
+        return resultado;
+    }
 }

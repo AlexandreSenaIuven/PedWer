@@ -70,6 +70,31 @@ public sealed class LacoComandos(ApiCentralCliente api, TimeSpan intervalo)
                 return;
             }
 
+            if (string.Equals(comando.Tipo, "ConsultarGiro", StringComparison.OrdinalIgnoreCase))
+            {
+                // Consulta pura — botão "Giro". Produto vem como o único item de Itens.
+                var produto = comando.Itens[0];
+                var giro = new CadmovRepositorio().ListarGiro(comando.CodigoEmpresa, produto.Grupo, produto.Referencia, limite: 30);
+                var giroComando = giro
+                    .Select(g => new ItemGiroComandoDto(g.DataMov.ToString("yyyy-MM-dd"), g.NotaFiscal, g.CliFor, g.Quantidade, g.ValorUnitario))
+                    .ToList();
+                await api.ReportarResultadoAsync(comando.Id, new ResultadoComandoRequest(true, null, null, Giro: giroComando));
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] comando {comando.Id} giro consultado ({giroComando.Count} linhas, produto {produto.Grupo}|{produto.Referencia}).");
+                return;
+            }
+
+            if (string.Equals(comando.Tipo, "ConsultarSaldoGeral", StringComparison.OrdinalIgnoreCase))
+            {
+                // Consulta pura — botão "Saldo Geral". Estoque do produto em cada empresa (nunca a PRINCIPAL).
+                var produto = comando.Itens[0];
+                var empresas = comando.EmpresasParaSaldo ?? [];
+                var saldos = new CadmatRepositorio().ConsultarSaldo(empresas, produto.Grupo, produto.Referencia);
+                var saldosComando = saldos.Select(s => new SaldoEmpresaComandoDto(s.CodigoEmpresa, s.QtdReal, s.QtReserva)).ToList();
+                await api.ReportarResultadoAsync(comando.Id, new ResultadoComandoRequest(true, null, null, SaldoGeral: saldosComando));
+                Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] comando {comando.Id} saldo geral consultado ({saldosComando.Count} empresas, produto {produto.Grupo}|{produto.Referencia}).");
+                return;
+            }
+
             var pedido = new Pedido(comando.TipoOperacao, comando.CodigoEmpresa, comando.CodigoCliente, DateOnly.Parse(comando.Data), comando.Autor)
             {
                 ReferenciaExterna = comando.ReferenciaExterna,

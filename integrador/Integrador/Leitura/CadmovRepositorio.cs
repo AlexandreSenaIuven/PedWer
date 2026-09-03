@@ -16,18 +16,22 @@ namespace Integrador.Leitura;
 /// </summary>
 public sealed class CadmovRepositorio
 {
-    public IReadOnlyList<ItemCompraDto> ListarUltimasCompras(string codigoEmpresa, string codigoCliente, int limite)
+    private static HashSet<string> BuscarTiposFaturaveis()
     {
         var tiposFaturaveis = new HashSet<string>();
-        using (var connBase = VfpConexao.AbrirBase())
-        using (var cmdTipos = new OleDbCommand("SELECT tipo, ind_fatura FROM tipos", connBase))
-        using (var readerTipos = cmdTipos.ExecuteReader())
+        using var connBase = VfpConexao.AbrirBase();
+        using var cmdTipos = new OleDbCommand("SELECT tipo, ind_fatura FROM tipos", connBase);
+        using var readerTipos = cmdTipos.ExecuteReader();
+        while (readerTipos.Read())
         {
-            while (readerTipos.Read())
-            {
-                if (Str(readerTipos, "ind_fatura") == "S") tiposFaturaveis.Add(Str(readerTipos, "tipo"));
-            }
+            if (Str(readerTipos, "ind_fatura") == "S") tiposFaturaveis.Add(Str(readerTipos, "tipo"));
         }
+        return tiposFaturaveis;
+    }
+
+    public IReadOnlyList<ItemCompraDto> ListarUltimasCompras(string codigoEmpresa, string codigoCliente, int limite)
+    {
+        var tiposFaturaveis = BuscarTiposFaturaveis();
 
         using var conn = VfpConexao.AbrirEmpresa(codigoEmpresa);
         using var cmd = new OleDbCommand(
@@ -48,6 +52,37 @@ public sealed class CadmovRepositorio
                 Str(reader, "nota_fisc"),
                 Str(reader, "grupo"),
                 Str(reader, "referencia"),
+                Dec(reader, "qtd_mov"),
+                Dec(reader, "valor_mov")));
+        }
+
+        return resultado;
+    }
+
+    /// <summary>Botão "Giro" — mesma tabela/filtro de "Últimas Compras", trocando o filtro de cliente por produto.</summary>
+    public IReadOnlyList<ItemGiroDto> ListarGiro(string codigoEmpresa, string grupo, string referencia, int limite)
+    {
+        var tiposFaturaveis = BuscarTiposFaturaveis();
+
+        using var conn = VfpConexao.AbrirEmpresa(codigoEmpresa);
+        using var cmd = new OleDbCommand(
+            "SELECT grupo, referencia, cli_for, data_mov, nota_fisc, tipo_oper, qtd_mov, valor_mov " +
+            "FROM cadmov WHERE grupo = ? AND referencia = ? AND es_mov = 'S' ORDER BY data_mov DESC",
+            conn);
+        cmd.Parameters.AddWithValue("@grupo", grupo);
+        cmd.Parameters.AddWithValue("@referencia", referencia);
+        using var reader = cmd.ExecuteReader();
+
+        var resultado = new List<ItemGiroDto>();
+        while (reader.Read() && resultado.Count < limite)
+        {
+            if (!ChaveExata(Str(reader, "grupo"), grupo) || !ChaveExata(Str(reader, "referencia"), referencia)) continue; // RF-105
+            if (!tiposFaturaveis.Contains(Str(reader, "tipo_oper"))) continue;
+
+            resultado.Add(new ItemGiroDto(
+                reader.GetDateTime(reader.GetOrdinal("data_mov")),
+                Str(reader, "nota_fisc"),
+                Str(reader, "cli_for"),
                 Dec(reader, "qtd_mov"),
                 Dec(reader, "valor_mov")));
         }

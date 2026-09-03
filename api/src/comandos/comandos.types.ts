@@ -62,16 +62,39 @@ export interface ItemCompra {
   produtoCaracter?: string;
 }
 
+/** Botão "Giro" — mesma origem de ItemCompra (`cadmov`), filtrada por produto em vez de cliente. */
+export interface ItemGiro {
+  dataMov: string;
+  notaFiscal: string;
+  cliFor: string;
+  quantidade: number;
+  valorUnitario: number;
+  /** Preenchido na leitura, a partir do cadastro de clientes já sincronizado. */
+  clienteNome?: string;
+}
+
+/** Botão "Saldo Geral" — saldo de estoque do produto numa empresa (`cadmat.qtdreal`/`qt_reserva`). */
+export interface SaldoEmpresa {
+  codigoEmpresa: string;
+  qtdReal: number;
+  qtReserva: number;
+}
+
 export interface ComandoCriarPedido {
   id: string;
   /**
    * Sem tipo = 'CriarPedido' (compatibilidade). 'GravarEntrega' grava só o
-   * cligeral do pedido já criado. 'ConsultarUltimasCompras' não grava nada
-   * — só lê `cadmov` e devolve em `ultimasCompras`.
+   * cligeral do pedido já criado. 'ConsultarUltimasCompras'/'ConsultarGiro'/
+   * 'ConsultarSaldoGeral' não gravam nada — só leem `cadmov`/`cadmat` sob
+   * demanda e devolvem em ultimasCompras/giro/saldoGeral.
    */
-  tipo?: 'CriarPedido' | 'GravarEntrega' | 'ConsultarUltimasCompras';
+  tipo?: 'CriarPedido' | 'GravarEntrega' | 'ConsultarUltimasCompras' | 'ConsultarGiro' | 'ConsultarSaldoGeral';
   entrega?: DadosEntregaComando;
   ultimasCompras?: ItemCompra[];
+  giro?: ItemGiro[];
+  saldoGeral?: SaldoEmpresa[];
+  /** Só para 'ConsultarSaldoGeral': quais empresas checar (soma todas, não só a da sessão). */
+  empresasParaSaldo?: string[];
   tipoOperacao: string;
   codigoEmpresa: string;
   codigoCliente: string;
