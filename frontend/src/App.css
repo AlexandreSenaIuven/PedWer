@@ -436,21 +436,41 @@ button.link {
   gap: 0.4rem;
 }
 
+/* Botões de editar/excluir/salvar/cancelar: ícone grande e área de toque de
+   pelo menos 44px (padrão para dedo no celular). */
 .acoes-item button.link {
-  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.35rem;
+  line-height: 1;
   text-decoration: none;
   color: var(--cor-texto-suave);
+  border-radius: 8px;
 }
 
-.acoes-item button.link:hover {
+.acoes-item button.link:hover,
+.acoes-item button.link:active {
   color: var(--cor-texto);
+  background: #f1f5f9;
+}
+
+@media (min-width: 721px) {
+  .acoes-item button.link {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 1.2rem;
+  }
 }
 
 .input-linha {
   width: 100%;
-  min-width: 4.5rem;
-  padding: 0.3rem 0.4rem;
-  font-size: 0.85rem;
+  min-width: 5rem;
+  min-height: 40px;
+  padding: 0.4rem 0.5rem;
+  font-size: 1rem; /* 16px: evita o zoom automático do iOS ao focar */
 }
 
 .credito {
