@@ -13,10 +13,10 @@ interface Props {
 // Guarda o texto digitado à parte para não brigar com o usuário no meio da
 // digitação ("1," ou "1.0"), e só ressincroniza quando o valor externo muda.
 export function CampoNumerico({ valor, onChange, disabled, title, className }: Props) {
-  const [texto, setTexto] = useState(String(valor))
+  const [texto, setTexto] = useState(paraTexto(valor))
 
   useEffect(() => {
-    setTexto((atual) => (converter(atual) === valor ? atual : String(valor)))
+    setTexto((atual) => (converter(atual) === valor ? atual : paraTexto(valor)))
   }, [valor])
 
   return (
@@ -36,6 +36,11 @@ export function CampoNumerico({ valor, onChange, disabled, title, className }: P
       }}
     />
   )
+}
+
+// Zero aparece como campo vazio — o usuário digita direto, sem apagar o "0".
+function paraTexto(valor: number): string {
+  return valor === 0 ? '' : String(valor)
 }
 
 function converter(texto: string): number {

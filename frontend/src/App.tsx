@@ -305,7 +305,10 @@ function App() {
       setProdutoItem(null)
       setCotacao(null)
       setQuantidade(1)
+      setPrecoDigitado(0)
       setDescPercentual(0)
+      // abre a busca de produto (com o cursor no filtro) para já lançar o próximo item
+      setProdutoBuscaAberta(true)
     } catch (e) {
       setErroItem((e as Error).message)
     } finally {
