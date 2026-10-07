@@ -7,8 +7,15 @@ export class ClientesController {
   constructor(private readonly cache: CacheService) {}
 
   @Get()
-  listar(@Query('q') q?: string, @Query('limite') limite?: string, @Query('vendedor') vendedor?: string) {
-    return this.cache.listarClientes(q, limite ? Number(limite) : undefined, vendedor).map(traduzirCliente);
+  listar(
+    @Query('q') q?: string,
+    @Query('limite') limite?: string,
+    @Query('vendedor') vendedor?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.cache
+      .listarClientes(q, limite ? Number(limite) : undefined, vendedor, offset ? Number(offset) : undefined)
+      .map(traduzirCliente);
   }
 
   @Get(':codigo')

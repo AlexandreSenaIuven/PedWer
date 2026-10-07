@@ -15,6 +15,7 @@ import {
 import { Breadcrumb } from './components/Breadcrumb'
 import { BuscaModal } from './components/BuscaModal'
 import { CampoBusca } from './components/CampoBusca'
+import { CampoNumerico } from './components/CampoNumerico'
 import { Login } from './components/Login'
 import { TopBar } from './components/TopBar'
 import { DialogoEntrega } from './components/DialogoEntrega'
@@ -58,6 +59,14 @@ function empresaArmazenada(): string | null {
   } catch {
     return null
   }
+}
+
+// CNPJ (14 dígitos) ou CPF (11) com máscara; qualquer outra coisa fica como veio.
+function formatarDocumento(doc: string): string {
+  const d = (doc ?? '').replace(/\D/g, '')
+  if (d.length === 14) return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5')
+  if (d.length === 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+  return doc ?? ''
 }
 
 function App() {
@@ -180,9 +189,10 @@ function App() {
   // Cotação na escolha do produto (como o VFP em txtAddText.LostFocus): preço
   // de tabela já ajustado ao cliente; se houver negociação vigente, o preço e
   // o % de desconto vêm dela; vencida → alerta e bloqueia o item.
-  // Preço sempre começa zerado (decisão do usuário, 03/09/2026) — o vendedor
-  // digita o valor a cada inclusão. Exceção: negociação vigente, que TRAVA o
-  // campo com o preço definido pela negociação (não é um "chute" a zerar).
+  // O valor unitário já vem com o preço de tabela (ajustado ao cliente) e o
+  // vendedor informa o desconto (revisão de 07/10/2026 da decisão de
+  // 03/09/2026, que zerava o preço). Negociação vigente TRAVA o campo com o
+  // preço definido pela negociação.
   async function selecionarProduto(produto: ProdutoResumo) {
     setProdutoItem(produto)
     setErroItem(null)
@@ -207,6 +217,8 @@ function App() {
       if (c.negociacao.situacao === 'vigente') {
         setPrecoDigitado(c.precoSugerido)
         setDescPercentual(Math.round(c.percentualDesconto * 100) / 100)
+      } else {
+        setPrecoDigitado(c.precoTabelaAjustado)
       }
       if (c.negociacao.situacao === 'vencida') {
         setErroItem(`Negociação de preço deste produto venceu em ${c.negociacao.dataValidade} — venda não permitida. Renove a negociação antes de vender.`)
@@ -224,6 +236,13 @@ function App() {
     setPrecoDigitado(preco)
     if (precoTabelaAtual > 0) {
       setDescPercentual(Math.round(((precoTabelaAtual - preco) / precoTabelaAtual) * 100 * 100) / 100)
+    }
+  }
+
+  function alterarDesconto(desconto: number) {
+    setDescPercentual(desconto)
+    if (precoTabelaAtual > 0) {
+      setPrecoDigitado(Math.round(precoTabelaAtual * (1 - desconto / 100) * 100) / 100)
     }
   }
 
@@ -685,7 +704,7 @@ function App() {
                   <label className="campo-produto-linha">
                     Produto
                     <CampoBusca
-                      valor={produtoItem ? `${produtoItem.grupo}|${produtoItem.referencia} — ${produtoItem.descricao}` : ''}
+                      valor={produtoItem ? `${produtoItem.grupo}|${produtoItem.referencia} — ${produtoItem.descricao}${produtoItem.caracter ? ` ${produtoItem.caracter}` : ''}` : ''}
                       placeholder="Buscar por código ou descrição..."
                       onAbrir={() => setProdutoBuscaAberta(true)}
                     />
@@ -703,11 +722,15 @@ function App() {
                   <div className="grade-campos grade-item">
                     <label>
                       Quantidade
-                      <input type="number" min={0} step="1" value={quantidade} onChange={(e) => setQuantidade(Number(e.target.value))} />
+                      <CampoNumerico valor={quantidade} onChange={setQuantidade} />
                     </label>
                     <label>
                       Valor unitário
-                      <input type="number" min={0} step="0.01" value={precoDigitado} disabled={negociacaoVigente} title={negociacaoVigente ? 'Preço definido pela negociação' : undefined} onChange={(e) => alterarPreco(Number(e.target.value))} />
+                      <CampoNumerico valor={precoDigitado} disabled={negociacaoVigente} title={negociacaoVigente ? 'Preço definido pela negociação' : undefined} onChange={alterarPreco} />
+                    </label>
+                    <label>
+                      Desconto (%)
+                      <CampoNumerico valor={descPercentual} disabled={negociacaoVigente} title={negociacaoVigente ? 'Desconto definido pela negociação' : undefined} onChange={alterarDesconto} />
                     </label>
                     <button type="button" className="primario" disabled={carregandoItem || negociacaoVencida} onClick={adicionarItem}>
                       {carregandoItem ? 'Calculando...' : '+ Adicionar'}
@@ -738,14 +761,7 @@ function App() {
                               <td>{i.produtoGrupo}|{i.produtoReferencia} — {i.produtoDescricao}</td>
                               <td>
                                 {editando ? (
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    step="1"
-                                    className="input-linha"
-                                    value={edQuantidade}
-                                    onChange={(e) => setEdQuantidade(Number(e.target.value))}
-                                  />
+                                  <CampoNumerico className="input-linha" valor={edQuantidade} onChange={setEdQuantidade} />
                                 ) : (
                                   i.quantidade
                                 )}
@@ -753,14 +769,7 @@ function App() {
                               <td>{i.precoTabelaAjustado.toFixed(2)}</td>
                               <td>
                                 {editando ? (
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    step="0.01"
-                                    className="input-linha"
-                                    value={edPreco}
-                                    onChange={(e) => edAlterarPreco(Number(e.target.value))}
-                                  />
+                                  <CampoNumerico className="input-linha" valor={edPreco} onChange={edAlterarPreco} />
                                 ) : (
                                   i.precoFinal.toFixed(2)
                                 )}
@@ -892,11 +901,14 @@ function App() {
         aberto={clienteBuscaAberta}
         onFechar={() => setClienteBuscaAberta(false)}
         onSelecionar={setCliente}
-        buscar={(termo) => api.buscarClientes(termo, usuario.vendedorCodigo)}
+        minCaracteres={0}
+        paginado
+        buscar={(termo, offset) => api.buscarClientes(termo, usuario.vendedorCodigo, offset)}
         chave={(c) => c.codigo}
         colunas={[
           { cabecalho: 'Código', render: (c) => c.codigo },
           { cabecalho: 'Nome', render: (c) => c.nome },
+          { cabecalho: 'Documento', render: (c) => formatarDocumento(c.cnpj) },
           { cabecalho: 'Crédito', render: (c) => c.credito.toFixed(2) },
         ]}
       />
@@ -911,7 +923,7 @@ function App() {
         chave={(p) => `${p.grupo}|${p.referencia}`}
         colunas={[
           { cabecalho: 'Código', render: (p) => `${p.grupo}|${p.referencia}` },
-          { cabecalho: 'Descrição', render: (p) => p.descricao },
+          { cabecalho: 'Descrição', render: (p) => (p.caracter ? `${p.descricao} ${p.caracter}` : p.descricao) },
           { cabecalho: 'Preço tabela', render: (p) => p.precoTabela.toFixed(2) },
           {
             cabecalho: 'Saldo geral',

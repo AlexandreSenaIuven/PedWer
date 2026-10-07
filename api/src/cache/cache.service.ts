@@ -22,6 +22,9 @@ import {
  * rápido sem depender do console estar de pé no instante da consulta; o
  * preço é a defasagem do intervalo de sincronização (hoje 30s).
  */
+/** `cod_vendor` da carteira comum: seus clientes aparecem para todos os vendedores. */
+const VENDEDOR_CARTEIRA_COMUM = '500';
+
 @Injectable()
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
@@ -121,17 +124,23 @@ export class CacheService {
   /**
    * `vendedorCodigo`: quando informado, restringe aos clientes em que o
    * usuário logado é vendedor 1 ou 2 (`cod_vendor`/`cod_vend2`) — carteira
-   * de vendedor (25/08/2026).
+   * de vendedor (25/08/2026). Clientes com `cod_vendor` 500 (carteira
+   * comum da empresa) aparecem para todos os vendedores (07/10/2026).
    */
-  listarClientes(termo?: string, limite = 20, vendedorCodigo?: string): ClienteFisico[] {
+  listarClientes(termo?: string, limite = 20, vendedorCodigo?: string, offset = 0): ClienteFisico[] {
     const todos = [...this.clientes.values()];
     const daCarteira = vendedorCodigo
-      ? todos.filter((c) => c.codVendor === vendedorCodigo || c.codVend2 === vendedorCodigo)
+      ? todos.filter(
+          (c) =>
+            c.codVendor.trim() === vendedorCodigo ||
+            c.codVend2.trim() === vendedorCodigo ||
+            c.codVendor.trim() === VENDEDOR_CARTEIRA_COMUM,
+        )
       : todos;
     const filtrados = termo
       ? daCarteira.filter((c) => this.contemTermo(c.codigo, termo) || this.contemTermo(c.razaoSoc, termo))
       : daCarteira;
-    return filtrados.slice(0, limite);
+    return filtrados.slice(offset, offset + limite);
   }
 
   buscarCliente(codigo: string): ClienteFisico | null {

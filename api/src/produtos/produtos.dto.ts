@@ -4,6 +4,7 @@ export interface ProdutoResumo {
   grupo: string;
   referencia: string;
   descricao: string;
+  caracter: string;
   precoTabela: number;
   gradecol: string;
   gradegrp: string;
@@ -14,6 +15,7 @@ export function traduzirProduto(p: ProdutoFisico): ProdutoResumo {
     grupo: p.grupo,
     referencia: p.referencia,
     descricao: p.descricao,
+    caracter: p.caracter,
     precoTabela: p.prcVenda,
     gradecol: p.gradecol,
     gradegrp: p.gradegrp,

@@ -12,7 +12,7 @@ interface BuscaModalProps<T> {
   aberto: boolean
   onFechar: () => void
   onSelecionar: (item: T) => void
-  buscar: (termo: string) => Promise<T[]>
+  buscar: (termo: string, offset: number) => Promise<T[]>
   colunas: ColunaBusca<T>[]
   chave: (item: T) => string
   /**
@@ -22,6 +22,12 @@ interface BuscaModalProps<T> {
    * 2 caracteres e onde listar tudo de cara é o comportamento útil.
    */
   minCaracteres?: number
+  /**
+   * Rolagem infinita: ao chegar ao fim da lista, chama `buscar(termo, offset)`
+   * de novo para trazer a página seguinte (de LIMITE_BUSCA em LIMITE_BUSCA),
+   * até vir uma página incompleta. `buscar` precisa respeitar o `offset`.
+   */
+  paginado?: boolean
 }
 
 /**
@@ -40,10 +46,13 @@ export function BuscaModal<T>({
   colunas,
   chave,
   minCaracteres = 3,
+  paginado = false,
 }: BuscaModalProps<T>) {
   const [termo, setTermo] = useState('')
   const [resultados, setResultados] = useState<T[]>([])
   const [carregando, setCarregando] = useState(false)
+  const [carregandoMais, setCarregandoMais] = useState(false)
+  const [temMais, setTemMais] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const aguardandoDigitacao = termo.trim().length < minCaracteres
@@ -57,6 +66,7 @@ export function BuscaModal<T>({
     if (!aberto) return
     setTermo('')
     setResultados([])
+    setTemMais(false)
     inputRef.current?.focus()
   }, [aberto])
 
@@ -64,17 +74,43 @@ export function BuscaModal<T>({
     if (!aberto) return
     if (termo.trim().length < minCaracteres) {
       setResultados([])
+      setTemMais(false)
       setCarregando(false)
       return
     }
     setCarregando(true)
+    let cancelado = false
     const id = setTimeout(() => {
-      buscar(termo.trim())
-        .then(setResultados)
-        .finally(() => setCarregando(false))
+      buscar(termo.trim(), 0)
+        .then((lista) => {
+          if (cancelado) return
+          setResultados(lista)
+          setTemMais(paginado && lista.length >= LIMITE_BUSCA)
+        })
+        .finally(() => !cancelado && setCarregando(false))
     }, 400)
-    return () => clearTimeout(id)
-  }, [termo, aberto, buscar, minCaracteres])
+    return () => {
+      cancelado = true
+      clearTimeout(id)
+    }
+  }, [termo, aberto, buscar, minCaracteres, paginado])
+
+  function carregarMais() {
+    if (!temMais || carregando || carregandoMais) return
+    setCarregandoMais(true)
+    buscar(termo.trim(), resultados.length)
+      .then((lista) => {
+        setResultados((atual) => [...atual, ...lista])
+        setTemMais(lista.length >= LIMITE_BUSCA)
+      })
+      .catch(() => setTemMais(false))
+      .finally(() => setCarregandoMais(false))
+  }
+
+  function aoRolar(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) carregarMais()
+  }
 
   if (!aberto) return null
 
@@ -92,13 +128,13 @@ export function BuscaModal<T>({
           value={termo}
           onChange={(e) => setTermo(e.target.value)}
         />
-        <div className="modal-resultados">
+        <div className="modal-resultados" onScroll={paginado ? aoRolar : undefined}>
           {aguardandoDigitacao && (
             <p className="vazio">Digite pelo menos {minCaracteres} caracteres para buscar.</p>
           )}
           {!aguardandoDigitacao && carregando && <p className="vazio">Buscando...</p>}
           {!aguardandoDigitacao && !carregando && resultados.length === 0 && <p className="vazio">Nenhum resultado.</p>}
-          {!aguardandoDigitacao && !carregando && resultados.length >= LIMITE_BUSCA && (
+          {!aguardandoDigitacao && !carregando && !paginado && resultados.length >= LIMITE_BUSCA && (
             <p className="modal-aviso-limite">
               Mostrando os primeiros {LIMITE_BUSCA} resultados — digite mais para refinar a busca.
             </p>
@@ -119,6 +155,7 @@ export function BuscaModal<T>({
               </tbody>
             </table>
           )}
+          {paginado && carregandoMais && <p className="vazio">Carregando mais...</p>}
         </div>
       </div>
     </div>

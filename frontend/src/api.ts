@@ -58,6 +58,7 @@ export interface ProdutoResumo {
   grupo: string
   referencia: string
   descricao: string
+  caracter: string
   precoTabela: number
   gradecol: string
   gradegrp: string
@@ -122,10 +123,11 @@ export const LIMITE_BUSCA = 50
 export const api = {
   // vendedorCodigo restringe à carteira do vendedor logado (cod_vendor OU
   // cod_vend2 do cliente) — omitido, traz todos (ex.: checagem de conexão).
-  buscarClientes: (termo?: string, vendedorCodigo?: string) =>
+  // offset: paginação de 50 em 50 (rolagem infinita no modal de clientes).
+  buscarClientes: (termo?: string, vendedorCodigo?: string, offset = 0) =>
     fetch(
       urlApi(
-        `clientes?limite=${LIMITE_BUSCA}${termo ? `&q=${encodeURIComponent(termo)}` : ''}${vendedorCodigo ? `&vendedor=${encodeURIComponent(vendedorCodigo)}` : ''}`,
+        `clientes?limite=${LIMITE_BUSCA}&offset=${offset}${termo ? `&q=${encodeURIComponent(termo)}` : ''}${vendedorCodigo ? `&vendedor=${encodeURIComponent(vendedorCodigo)}` : ''}`,
       ),
     ).then((r) => tratar<ClienteResumo[]>(r)),
 
